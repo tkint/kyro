@@ -1,0 +1,12 @@
+{
+  "singleQuote": true,
+  "endOfLine": "auto",
+  "semi": true,
+  "trailingComma": "all",
+  "vueIndentScriptAndStyle": false,
+  "bracketSpacing": true,
+  "bracketSameLine": true,
+  "printWidth": 120,
+  "importOrder": ["^[A-Za-z].*css$", "^@/.*css$", "^[A-Za-z]", "^@/", "^[./]"],
+  "importOrderSeparation": false
+}
