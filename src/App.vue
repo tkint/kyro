@@ -11,10 +11,12 @@ const authStore = useAuthStore();
 const showDrawer = ref(true);
 
 const cachedViews: string[] = [
-  RouteNames.APPLICATIONS,
   RouteNames.APPLICATION,
+  RouteNames.APPLICATIONS,
   RouteNames.ORGANIZATION,
+  RouteNames.ORGANIZATIONS,
   RouteNames.SPACE,
+  RouteNames.SPACES,
 ].map((route) => componentNameFor(route));
 </script>
 

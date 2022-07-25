@@ -1,12 +1,24 @@
 <script setup lang="ts">
+import { RouteLocationRaw } from 'vue-router';
 import { RouteNames } from '@/router';
 import { useAuthStore } from '@/stores/auth';
+
+type MenuItem = {
+  label: string;
+  route: RouteLocationRaw;
+};
 
 const emits = defineEmits<{
   (e: 'toggleDrawer'): void;
 }>();
 
 const authStore = useAuthStore();
+
+const menus: MenuItem[] = [
+  { label: 'Home', route: { name: RouteNames.HOME } },
+  { label: 'Applications', route: { name: RouteNames.APPLICATIONS } },
+  { label: 'Organisations', route: { name: RouteNames.ORGANIZATIONS } },
+];
 </script>
 
 <template>
@@ -17,8 +29,7 @@ const authStore = useAuthStore();
 
     <v-app-bar-title class="v-col-auto">Kyro</v-app-bar-title>
 
-    <v-btn :to="{ name: RouteNames.HOME }">Home</v-btn>
-    <v-btn :to="{ name: RouteNames.APPLICATIONS }">Applications</v-btn>
+    <v-btn :to="menu.route" v-for="(menu, index) in menus" :key="`menu-${index}`">{{ menu.label }}</v-btn>
 
     <v-spacer></v-spacer>
 

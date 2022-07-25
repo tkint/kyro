@@ -20,8 +20,6 @@ const props = defineProps<{
 
 const { response, loadData, error, loading, resetData } = useLoadData(() => organizationApi.getOne(props.guid));
 
-onActivated(loadData);
-
 onCachedActivated(
   () => props.guid,
   (invalidate) => {

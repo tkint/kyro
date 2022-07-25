@@ -7,7 +7,7 @@ export default {
 <script setup lang="ts">
 import { onActivated } from 'vue';
 import { useRouter } from 'vue-router';
-import applicationsApi from '@/api/applications';
+import applicationApi from '@/api/applications';
 import ApiErrorAlert from '@/components/ApiErrorAlert.vue';
 import useFilterData from '@/composables/useFilterData';
 import useLoadData from '@/composables/useLoadData';
@@ -16,17 +16,16 @@ import { componentNameFor, RouteNames } from '@/router';
 
 const router = useRouter();
 
-const { data, response, loadData, loading } = useLoadData(() => applicationsApi.getAll());
+const { data, response, loadData, loading } = useLoadData(() => applicationApi.getAll());
 
 onActivated(loadData);
 
 const fields: {
   key: keyof CFApplication;
   label: string;
-  value: (app: CFApplication) => any;
 }[] = [
-  { key: 'name', label: 'Name', value: (app) => app.name },
-  { key: 'state', label: 'State', value: (app) => app.state },
+  { key: 'name', label: 'Name' },
+  { key: 'state', label: 'State' },
 ];
 
 const openApplication = async (guid: CFApplication['guid']) => {

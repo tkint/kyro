@@ -7,9 +7,6 @@ export default {
   getAll: async () => {
     return handleApiCall<Paginated<CFOrganization>>({
       path: '/v3/organizations',
-      query: {
-        per_page: 200,
-      },
       authorization: useAuthStore().getAuthorization,
     });
   },
