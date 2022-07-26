@@ -3,6 +3,7 @@ import { computed, ref } from 'vue';
 import { ApiErrorResponse, compactErrors } from '@/api';
 import applicationsApi from '@/api/applications';
 import environmentApi from '@/api/environment';
+import processApi from '@/api/process';
 import ApiErrorAlert from '@/components/ApiErrorAlert.vue';
 import Application from '@/components/application/Application.vue';
 import EnvironmentTable from '@/components/environment/EnvironmentTable.vue';
@@ -34,8 +35,15 @@ const {
   resetData: resetEnvironment,
 } = useLoadData(() => environmentApi.getForApplication(props.guid), loading);
 
+const {
+  data: processes,
+  error: processesError,
+  loadData: loadProcesses,
+  resetData: resetProcesses,
+} = useLoadData(() => processApi.getForApplication(props.guid, 'web'), loading);
+
 const apiError = computed<ApiErrorResponse | undefined>(() =>
-  compactErrors(applicationError.value, environmentError.value),
+  compactErrors(applicationError.value, environmentError.value, processesError.value),
 );
 
 onCachedActivated(
@@ -44,9 +52,11 @@ onCachedActivated(
     if (invalidate) {
       resetApplication();
       resetEnvironment();
+      resetProcesses();
     }
     loadApplication();
     loadEnvironment();
+    loadProcesses();
   },
 );
 </script>
@@ -67,9 +77,15 @@ onCachedActivated(
       </v-col>
     </v-row>
 
-    <v-row>
+    <v-row v-if="processes">
       <v-col>
-        <environment-table :environment="environment" v-if="environment"></environment-table>
+        {{ processes }}
+      </v-col>
+    </v-row>
+
+    <v-row v-if="environment">
+      <v-col>
+        <environment-table :environment="environment"></environment-table>
       </v-col>
     </v-row>
   </v-container>
