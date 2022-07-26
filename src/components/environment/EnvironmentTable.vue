@@ -1,29 +1,31 @@
 <script setup lang="ts">
 import useFilterData from '@/composables/useFilterData';
-import { EnvironmentVariables } from '@/models/cf/environment';
+import { CFEnvironmentVariables } from '@/models/cf/environment';
 
 const props = defineProps<{
-  environment: EnvironmentVariables;
+  environment: CFEnvironmentVariables;
 }>();
 
 const { filters, computedData: filteredVariables } = useFilterData((filters, { includesText }) => {
-  return Object.entries(props.environment.var).filter(([key, value]) => {
+  return Object.entries(props.environment.environment_variables).filter(([key, value]) => {
     return !filters.text || includesText(key, value);
   });
 });
 </script>
 
 <template>
-  <v-container class="pa-0">
-    <v-row>
-      <v-col>
-        <v-text-field label="Filtre" v-model="filters.text"></v-text-field>
-      </v-col>
-    </v-row>
+  <v-card>
+    <v-toolbar>
+      <v-toolbar-title>Variables d'environnement</v-toolbar-title>
+
+      <v-spacer></v-spacer>
+
+      <v-text-field label="Filtre" density="compact" v-model="filters.text" solo hide-details></v-text-field>
+    </v-toolbar>
 
     <v-row>
       <v-col>
-        <v-table>
+        <v-table density="compact">
           <thead>
             <tr>
               <th>Key</th>
@@ -40,5 +42,5 @@ const { filters, computedData: filteredVariables } = useFilterData((filters, { i
         </v-table>
       </v-col>
     </v-row>
-  </v-container>
+  </v-card>
 </template>

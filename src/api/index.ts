@@ -110,7 +110,7 @@ export const handleApiCall = async <TData, TError = ApiErrorResponse>(
   }
 };
 
-export const compactErrors = (...errors: (ApiErrorResponse | undefined)[]): ApiErrorResponse | undefined => {
+export const compactErrors = (...errors: (ApiErrorResponse | undefined | false)[]): ApiErrorResponse | undefined => {
   const flattenErrors = distinct(arrayOfNotFalsy(...errors).flatMap((error) => error.errors));
   return flattenErrors.length > 0 ? { errors: flattenErrors } : undefined;
 };

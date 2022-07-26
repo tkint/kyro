@@ -1,4 +1,4 @@
-import { CFLink, CFMetaData, CFResourceWithRelationShips, CFToOneRelationship } from '@/models/cf/common';
+import { CFLink, CFMetaData, CFPaginated, CFResourceWithRelationShips, CFToOneRelationship } from '@/models/cf/common';
 
 export interface CFSpace extends CFResourceWithRelationShips {
   name: string;
@@ -11,3 +11,5 @@ export interface CFSpace extends CFResourceWithRelationShips {
     self: CFLink;
   };
 }
+
+export type PaginatedSpaces = CFPaginated<CFSpace>;

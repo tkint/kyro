@@ -1,4 +1,4 @@
-import { CFLink, CFMetaData, CFResourceWithRelationShips, CFToOneRelationship, Paginated } from '@/models/cf/common';
+import { CFLink, CFMetaData, CFResourceWithRelationShips, CFToOneRelationship, CFPaginated } from '@/models/cf/common';
 import { CFOrganization } from '@/models/cf/organization';
 import { CFSpace } from '@/models/cf/space';
 
@@ -36,7 +36,7 @@ export interface CFApplication extends CFResourceWithRelationShips {
   };
 }
 
-export type PaginatedApplications = Paginated<CFApplication> & {
+export type PaginatedApplications = CFPaginated<CFApplication> & {
   included?: {
     spaces: CFSpace[];
     organizations: CFOrganization[];

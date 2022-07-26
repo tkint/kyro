@@ -1,11 +1,10 @@
 import { handleApiCall } from '@/api';
-import { Paginated } from '@/models/cf/common';
-import { CFOrganization } from '@/models/cf/organization';
+import { CFOrganization, PaginatedOrganizations } from '@/models/cf/organization';
 import { useAuthStore } from '@/stores/auth';
 
 export default {
   getAll: async () => {
-    return handleApiCall<Paginated<CFOrganization>>({
+    return handleApiCall<PaginatedOrganizations>({
       path: '/v3/organizations',
       authorization: useAuthStore().getAuthorization,
     });

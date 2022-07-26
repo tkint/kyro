@@ -1,11 +1,10 @@
 import { handleApiCall } from '@/api';
-import { Paginated } from '@/models/cf/common';
-import { CFSpace } from '@/models/cf/space';
+import { CFSpace, PaginatedSpaces } from '@/models/cf/space';
 import { useAuthStore } from '@/stores/auth';
 
 export default {
   getAll: async () => {
-    return handleApiCall<Paginated<CFSpace>>({
+    return handleApiCall<PaginatedSpaces>({
       path: '/v3/spaces',
       query: {
         per_page: 200,

@@ -1,14 +1,13 @@
 <script setup lang="ts">
 import { computed, onActivated, ref, watch } from 'vue';
-import applicationApi from '@/api/applications';
+import applicationApi from '@/api/application';
 import ApiErrorAlert from '@/components/ApiErrorAlert.vue';
+import ApplicationItem from '@/components/application/ApplicationItem.vue';
 import useFilterData from '@/composables/useFilterData';
 import useLoadData from '@/composables/useLoadData';
 import { CFInclude } from '@/models/cf/common';
 import { CFOrganization } from '@/models/cf/organization';
 import { CFSpace } from '@/models/cf/space';
-import { RouteNames } from '@/router';
-import { distinct } from '@/utils/array';
 
 const { data, response, loadData, loading } = useLoadData(() =>
   applicationApi.getAll({ includes: [CFInclude.SPACE, CFInclude.SPACE_ORGANIZATION] }),
@@ -25,36 +24,30 @@ const applications = computed(() => {
     const space = included?.spaces?.find(({ guid }) => guid === application.relationships.space.data.guid);
     const organization =
       space && included?.organizations?.find(({ guid }) => guid === space.relationships.organization.data.guid);
-    return { ...application, space, organization };
+    return {
+      ...application,
+      space: space && {
+        name: space.name,
+        guid: space.guid,
+      },
+      organization: organization && {
+        name: organization.name,
+        guid: organization.guid,
+      },
+    };
   });
 });
 
 const organizationFilter = ref<CFOrganization['guid']>();
-const organizations = computed(() =>
-  distinct(
-    applications.value.map((application) => ({
-      name: application.organization?.name,
-      guid: application.organization?.guid,
-    })),
-    (organization) => organization?.guid,
-  ),
-);
+const organizations = computed(() => data.value?.included?.organizations);
 
 const spaceFilter = ref<CFSpace['guid']>();
-const spaces = computed(() =>
-  distinct(
-    applications.value
-      .map((application) => ({
-        name: application.space?.name,
-        guid: application.space?.guid,
-        organizationGuid: application.space?.relationships.organization.data.guid,
-      }))
-      .filter((space) => {
-        const orgFilter = organizationFilter.value;
-        return !orgFilter || space?.organizationGuid === orgFilter;
-      }),
-    (space) => space?.guid,
-  ),
+const spaces = computed(
+  () =>
+    data.value?.included?.spaces.filter((space) => {
+      const orgFilter = organizationFilter.value;
+      return !orgFilter || space?.relationships.organization.data.guid === orgFilter;
+    }) || [],
 );
 
 watch(organizationFilter, () => {
@@ -84,7 +77,7 @@ const { filters, computedData: filteredApplications } = useFilterData((filters, 
         <v-col><api-error-alert :error="response.error"></api-error-alert></v-col>
       </v-row>
 
-      <template v-else flat>
+      <template v-else>
         <v-row>
           <v-col>
             <v-select
@@ -120,36 +113,7 @@ const { filters, computedData: filteredApplications } = useFilterData((filters, 
 
         <v-row>
           <v-col cols="3" v-for="application in filteredApplications" :key="`application-${application.guid}`">
-            <v-card :to="{ name: RouteNames.APPLICATION, params: { guid: application.guid } }">
-              <v-progress-linear :color="application.state === 'STARTED' ? 'success' : 'warning'" model-value="100">
-              </v-progress-linear>
-
-              <v-card-title>{{ application.name }}</v-card-title>
-
-              <v-card-text>
-                <v-row class="justify-space-between">
-                  <v-col cols="auto">{{ application.updated_at }}</v-col>
-                </v-row>
-
-                <v-row class="justify-space-between">
-                  <v-col cols="auto">Org/Space</v-col>
-                  <v-col class="text-end">
-                    <router-link
-                      v-if="application.organization"
-                      :to="{ name: RouteNames.ORGANIZATION, params: { guid: application.organization.guid } }">
-                      {{ application.organization.name }}
-                    </router-link>
-                    /
-                    <router-link
-                      @click.stop
-                      v-if="application.space"
-                      :to="{ name: RouteNames.SPACE, params: { guid: application.space.guid } }">
-                      {{ application.space.name }}
-                    </router-link>
-                  </v-col>
-                </v-row>
-              </v-card-text>
-            </v-card>
+            <application-item :application="application"></application-item>
           </v-col>
         </v-row>
       </template>

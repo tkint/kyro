@@ -1,6 +1,5 @@
 import { ref } from 'vue';
 import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router';
-import Home from '@/views/HomeView.vue';
 
 export enum RouteNames {
   HOME = 'HOME',
@@ -10,12 +9,13 @@ export enum RouteNames {
   ORGANIZATIONS = 'ORGANIZATIONS',
   SPACE = 'SPACE',
   SPACES = 'SPACES',
+  NOT_FOUND = 'NOT_FOUND',
 }
 
 export const componentNameFor = (route: RouteNames) => `${route}_VIEW`;
 
 export const routes: Record<RouteNames, RouteRecordRaw> = {
-  [RouteNames.HOME]: { path: '', component: Home },
+  [RouteNames.HOME]: { path: '', redirect: { name: RouteNames.APPLICATIONS } },
 
   [RouteNames.APPLICATION]: {
     path: '/application/:guid',
@@ -45,6 +45,12 @@ export const routes: Record<RouteNames, RouteRecordRaw> = {
   [RouteNames.SPACES]: {
     path: '/spaces',
     component: () => import('@/views/SpaceView.vue'),
+  },
+
+  [RouteNames.NOT_FOUND]: {
+    path: '/:pathMatch(.*)*',
+    component: () => import('@/views/NotFoundView.vue'),
+    props: true,
   },
 };
 

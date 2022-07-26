@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import { ApiErrorResponse, compactErrors } from '@/api';
-import applicationsApi from '@/api/applications';
+import applicationsApi from '@/api/application';
 import environmentApi from '@/api/environment';
 import processApi from '@/api/process';
 import ApiErrorAlert from '@/components/ApiErrorAlert.vue';

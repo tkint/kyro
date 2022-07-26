@@ -1,4 +1,4 @@
-import { CFLink, CFMetaData, CFResourceWithRelationShips, Paginated as CFPaginated } from '@/models/cf/common';
+import { CFLink, CFMetaData, CFResourceWithRelationShips, CFPaginated } from '@/models/cf/common';
 
 export type CFProcessType = 'web';
 

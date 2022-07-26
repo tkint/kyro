@@ -26,7 +26,6 @@ const localSHow = computed({
 });
 
 const menus: MenuItem[] = [
-  { label: 'Home', route: { name: RouteNames.HOME } },
   { label: 'Applications', route: { name: RouteNames.APPLICATIONS } },
   { label: 'Organisations', route: { name: RouteNames.ORGANIZATIONS } },
 ];

@@ -1,12 +1,12 @@
-import { ApiResponse, handleApiCall } from '.';
 import { CFApplication } from '@/models/cf/application';
-import { EnvironmentVariables } from '@/models/cf/environment';
+import { CFEnvironmentVariables } from '@/models/cf/environment';
 import { useAuthStore } from '@/stores/auth';
+import { handleApiCall } from '.';
 
 export default {
-  getForApplication: async (guid: CFApplication['guid']): Promise<ApiResponse<EnvironmentVariables>> => {
-    return handleApiCall<EnvironmentVariables>({
-      path: `/v3/apps/${guid}/environment_variables`,
+  getForApplication: async (guid: CFApplication['guid']) => {
+    return handleApiCall<CFEnvironmentVariables>({
+      path: `/v3/apps/${guid}/env`,
       authorization: useAuthStore().getAuthorization,
     });
   },
