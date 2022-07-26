@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "dayjs": "^1.11.4",
+    "jose": "^4.8.3",
     "pinia": "^2.0.16",
     "pinia-plugin-persistedstate": "^1.6.3",
     "vue": "^3.2.25",

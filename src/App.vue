@@ -2,22 +2,12 @@
 import { ref } from 'vue';
 import TheDrawer from '@/components/layout/TheDrawer.vue';
 import TheHeader from '@/components/layout/TheHeader.vue';
-import { componentNameFor, RouteNames } from '@/router';
 import { useAuthStore } from '@/stores/auth';
 import LoginView from '@/views/LoginView.vue';
 
 const authStore = useAuthStore();
 
 const showDrawer = ref(true);
-
-const cachedViews: string[] = [
-  RouteNames.APPLICATION,
-  RouteNames.APPLICATIONS,
-  RouteNames.ORGANIZATION,
-  RouteNames.ORGANIZATIONS,
-  RouteNames.SPACE,
-  RouteNames.SPACES,
-].map((route) => componentNameFor(route));
 </script>
 
 <template>
@@ -27,7 +17,7 @@ const cachedViews: string[] = [
       <the-drawer v-model:show="showDrawer"></the-drawer>
       <v-main>
         <router-view v-slot="{ Component }">
-          <keep-alive :include="cachedViews">
+          <keep-alive>
             <component :is="Component"></component>
           </keep-alive>
         </router-view>

@@ -6,12 +6,28 @@ export interface CFLink {
   method: HttpMethod;
 }
 
+export enum CFInclude {
+  USER = 'user',
+  SPACE = 'space',
+  SPACE_ORGANIZATION = 'space.organization',
+  ORG = 'org',
+  ORGANIZATION = 'organization',
+  DOMAIN = 'domain',
+  SERVICE_INSTANCE = 'service_instance',
+  SERVICE_OFFERING = 'service_offering',
+  ROUTE = 'route',
+}
+
 export interface CFRelationship {}
 
 export interface CFToOneRelationship extends CFRelationship {
   data: {
     guid: string;
   };
+}
+
+export interface CFToManyRelationship extends CFRelationship {
+  data: { guid: string }[];
 }
 
 export interface CFMetaData {
@@ -33,7 +49,8 @@ export interface CFResourceWithRelationShips extends CFResource {
 
 export interface Paginated<TObject extends CFResource> {
   pagination: Paginated.Pagination;
-  resources: TObject[];
+  resources: Omit<TObject, 'included'>[];
+  included?: Record<string, CFResource[]>;
 }
 
 export namespace Paginated {

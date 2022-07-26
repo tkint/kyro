@@ -6,7 +6,7 @@ const props = defineProps<{
   environment: EnvironmentVariables;
 }>();
 
-const { filters, filteredData: filteredVariables } = useFilterData((filters, { includesText }) => {
+const { filters, computedData: filteredVariables } = useFilterData((filters, { includesText }) => {
   return Object.entries(props.environment.var).filter(([key, value]) => {
     return !filters.text || includesText(key, value);
   });
@@ -14,7 +14,7 @@ const { filters, filteredData: filteredVariables } = useFilterData((filters, { i
 </script>
 
 <template>
-  <v-col>
+  <v-container class="pa-0">
     <v-row>
       <v-col>
         <v-text-field label="Filtre" v-model="filters.text"></v-text-field>
@@ -40,5 +40,5 @@ const { filters, filteredData: filteredVariables } = useFilterData((filters, { i
         </v-table>
       </v-col>
     </v-row>
-  </v-col>
+  </v-container>
 </template>

@@ -4,7 +4,7 @@ export interface CFSpace extends CFResourceWithRelationShips {
   name: string;
 
   relationships: {
-    space: CFToOneRelationship;
+    organization: CFToOneRelationship;
   };
   metadata: CFMetaData;
   links: {

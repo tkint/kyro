@@ -1,23 +1,29 @@
 import { handleApiCall, TODO } from '@/api';
 import { CFApplication, PaginatedApplications } from '@/models/cf/application';
+import { CFInclude } from '@/models/cf/common';
 import { useAuthStore } from '@/stores/auth';
-import { arrayOfNotFalsy } from '@/utils/array';
 
 export default {
-  getAll: async () => {
+  getAll: async (options?: Partial<{ includes: (CFInclude.SPACE | CFInclude.SPACE_ORGANIZATION)[] }>) => {
     return handleApiCall<PaginatedApplications>({
       path: '/v3/apps',
       query: {
         per_page: 200,
+        ...(options?.includes && {
+          include: options.includes,
+        }),
       },
       authorization: useAuthStore().getAuthorization,
     });
   },
-  getOne: async (guid: CFApplication['guid'], options?: { includeSpace: boolean; includeOrg: boolean }) => {
+  getOne: async (
+    guid: CFApplication['guid'],
+    options?: Partial<{ includes: (CFInclude.SPACE | CFInclude.SPACE_ORGANIZATION)[] }>,
+  ) => {
     return handleApiCall<CFApplication>({
       path: `/v3/apps/${guid}`,
-      query: options && {
-        include: arrayOfNotFalsy(options.includeSpace && 'space', options.includeOrg && 'space.organization'),
+      query: options?.includes && {
+        include: options.includes,
       },
       authorization: useAuthStore().getAuthorization,
     });

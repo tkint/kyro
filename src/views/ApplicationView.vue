@@ -1,9 +1,3 @@
-<script lang="ts">
-export default {
-  name: componentNameFor(RouteNames.APPLICATION),
-};
-</script>
-
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import { ApiErrorResponse, compactErrors } from '@/api';
@@ -15,7 +9,7 @@ import EnvironmentTable from '@/components/environment/EnvironmentTable.vue';
 import useLoadData from '@/composables/useLoadData';
 import { onCachedActivated } from '@/hooks';
 import { CFApplication } from '@/models/cf/application';
-import { componentNameFor, RouteNames } from '@/router';
+import { CFInclude } from '@/models/cf/common';
 
 const props = defineProps<{
   guid: CFApplication['guid'];
@@ -24,16 +18,19 @@ const props = defineProps<{
 const loading = ref(false);
 
 const {
-  response: application,
-  loadData: loadApplication,
+  data: application,
   error: applicationError,
+  loadData: loadApplication,
   resetData: resetApplication,
-} = useLoadData(() => applicationsApi.getOne(props.guid, { includeSpace: true, includeOrg: true }), loading);
+} = useLoadData(
+  () => applicationsApi.getOne(props.guid, { includes: [CFInclude.SPACE, CFInclude.SPACE_ORGANIZATION] }),
+  loading,
+);
 
 const {
-  response: environment,
-  loadData: loadEnvironment,
+  data: environment,
   error: environmentError,
+  loadData: loadEnvironment,
   resetData: resetEnvironment,
 } = useLoadData(() => environmentApi.getForApplication(props.guid), loading);
 
@@ -58,19 +55,21 @@ onCachedActivated(
   <v-container fluid>
     <v-progress-linear v-if="loading" indeterminate color="primary"></v-progress-linear>
 
-    <v-row
-      ><v-col> <api-error-alert v-if="apiError" :error="apiError"></api-error-alert> </v-col
-    ></v-row>
-
-    <v-row v-if="application?.success">
+    <v-row v-if="apiError">
       <v-col>
-        <application :application="application.data"></application>
+        <api-error-alert :error="apiError"></api-error-alert>
       </v-col>
     </v-row>
 
-    <v-row v-if="environment?.success">
+    <v-row v-if="application">
       <v-col>
-        <environment-table :environment="environment.data"></environment-table>
+        <application :application="application"></application>
+      </v-col>
+    </v-row>
+
+    <v-row>
+      <v-col>
+        <environment-table :environment="environment" v-if="environment"></environment-table>
       </v-col>
     </v-row>
   </v-container>

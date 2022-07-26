@@ -1,5 +1,5 @@
-import { handleApiCall } from '.';
 import { AuthToken } from '@/models/auth';
+import { handleApiCall } from '.';
 
 export default {
   getAuthToken: (options: { username: string; password: string }) => {

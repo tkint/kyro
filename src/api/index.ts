@@ -115,11 +115,18 @@ export const compactErrors = (...errors: (ApiErrorResponse | undefined)[]): ApiE
   return flattenErrors.length > 0 ? { errors: flattenErrors } : undefined;
 };
 
-export const TODO = (description: string = 'Not yet implemented'): ApiResponse<any, ApiErrorResponse> => {
+export const buildApiErrorResponse = (error?: Partial<ApiError>): ApiErrorResponse => ({
+  errors: [{ code: 9999, title: 'Erreur inattendue', detail: 'Erreur inattendue', ...error }],
+});
+
+export const buildApiResponseWithError = (error?: Partial<ApiError>): ApiResponse<never, ApiErrorResponse> => ({
+  success: false,
+  error: buildApiErrorResponse(error),
+});
+
+export const TODO = (description: string = 'Not yet implemented'): ApiResponse<never, ApiErrorResponse> => {
   return {
     success: false,
-    error: {
-      errors: [{ code: 0, title: 'TODO', detail: description }],
-    },
+    error: buildApiErrorResponse({ code: 0, title: 'TODO', detail: description }),
   };
 };

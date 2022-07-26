@@ -1,9 +1,3 @@
-<script lang="ts">
-export default {
-  name: componentNameFor(RouteNames.SPACE),
-};
-</script>
-
 <script setup lang="ts">
 import spaceApi from '@/api/space';
 import ApiErrorAlert from '@/components/ApiErrorAlert.vue';
@@ -11,7 +5,6 @@ import Space from '@/components/space/Space.vue';
 import useLoadData from '@/composables/useLoadData';
 import { onCachedActivated } from '@/hooks';
 import { CFSpace } from '@/models/cf/space';
-import { componentNameFor, RouteNames } from '@/router';
 
 const props = defineProps<{
   guid: CFSpace['guid'];
@@ -34,9 +27,11 @@ onCachedActivated(
   <v-container fluid>
     <v-progress-linear v-if="loading" indeterminate color="primary"></v-progress-linear>
 
-    <v-row
-      ><v-col><api-error-alert v-if="error" :error="error"></api-error-alert></v-col
-    ></v-row>
+    <v-row v-if="error">
+      <v-col>
+        <api-error-alert :error="error"></api-error-alert>
+      </v-col>
+    </v-row>
 
     <v-row v-if="response?.success">
       <v-col>

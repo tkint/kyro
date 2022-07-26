@@ -36,7 +36,12 @@ export interface CFApplication extends CFResourceWithRelationShips {
   };
 }
 
-export type PaginatedApplications = Paginated<CFApplication>;
+export type PaginatedApplications = Paginated<CFApplication> & {
+  included?: {
+    spaces: CFSpace[];
+    organizations: CFOrganization[];
+  };
+};
 
 export namespace CFApplication {
   export interface Lifecycle {

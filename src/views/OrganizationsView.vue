@@ -6,33 +6,17 @@ export default {
 
 <script setup lang="ts">
 import { onActivated } from 'vue';
-import { useRouter } from 'vue-router';
 import organizationApi from '@/api/organization';
 import ApiErrorAlert from '@/components/ApiErrorAlert.vue';
 import useFilterData from '@/composables/useFilterData';
 import useLoadData from '@/composables/useLoadData';
-import { CFOrganization } from '@/models/cf/organization';
 import { componentNameFor, RouteNames } from '@/router';
-
-const router = useRouter();
 
 const { data, response, loadData, loading } = useLoadData(() => organizationApi.getAll());
 
 onActivated(loadData);
 
-const fields: {
-  key: keyof CFOrganization;
-  label: string;
-}[] = [
-  { key: 'name', label: 'Name' },
-  { key: 'metadata', label: 'State' },
-];
-
-const openOrganization = async (guid: CFOrganization['guid']) => {
-  await router.push({ name: RouteNames.ORGANIZATION, params: { guid } });
-};
-
-const { filters, filteredData: filteredOrganizations } = useFilterData((filters, { includesText }) => {
+const { filters, computedData: filteredOrganizations } = useFilterData((filters, { includesText }) => {
   return data.value?.resources.filter((organization) => {
     return !filters.text || includesText(organization.name);
   });
