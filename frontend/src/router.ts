@@ -1,5 +1,5 @@
 import { ref } from 'vue';
-import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router';
+import { createRouter, createWebHashHistory, RouteRecordRaw } from 'vue-router';
 
 export enum RouteNames {
   HOME = 'HOME',
@@ -55,7 +55,7 @@ export const routes: Record<RouteNames, RouteRecordRaw> = {
 };
 
 const router = createRouter({
-  history: createWebHistory(),
+  history: createWebHashHistory(),
   routes: Object.entries(routes).map(([name, route]) => ({ ...route, name })),
 });
 

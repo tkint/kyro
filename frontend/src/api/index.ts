@@ -1,5 +1,6 @@
 import { HttpMethod } from '@/models/common';
 import { arrayOfNotFalsy, distinct } from '@/utils/array';
+import { absoluteOrRelativeURL } from '@/utils/url';
 
 type AppInfos = {
   apiUrl: string;
@@ -13,7 +14,7 @@ let appInfos: AppInfos;
  */
 export const getAppInfos = async (): Promise<AppInfos> => {
   if (!appInfos) {
-    if (import.meta.env.DEV) {
+    if (import.meta.env.DEV || import.meta.env.PROD) {
       appInfos = {
         apiUrl: import.meta.env.VITE_API_URL,
         loginUrl: import.meta.env.VITE_LOGIN_URL,
@@ -21,7 +22,7 @@ export const getAppInfos = async (): Promise<AppInfos> => {
     } else {
       const apiUrl = import.meta.env.VITE_API_URL;
 
-      const response = await fetch(new URL(apiUrl));
+      const response = await fetch(absoluteOrRelativeURL(apiUrl));
       const data = await response.json();
 
       appInfos = {
@@ -66,10 +67,10 @@ export const handleApiCall = async <TData, TError = ApiErrorResponse>(
 ): Promise<ApiResponse<TData, TError>> => {
   let url: URL;
   if ('url' in options) {
-    url = new URL(options.url);
+    url = absoluteOrRelativeURL(options.url);
   } else {
     const appInfos = await getAppInfos();
-    url = new URL(appInfos[options.endpoint ?? 'apiUrl']);
+    url = absoluteOrRelativeURL(appInfos[options.endpoint ?? 'apiUrl']);
     url.pathname += options.path;
     if (options.query) {
       const searchParams = new URLSearchParams();

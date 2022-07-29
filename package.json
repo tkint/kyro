@@ -1,32 +1,18 @@
 {
   "name": "kyro",
-  "private": true,
-  "version": "0.0.0",
   "scripts": {
-    "dev": "vite",
-    "build": "vue-tsc --noEmit && vite build",
-    "preview": "vite preview"
+    "prebuild": "npm run build -ws && rimraf dist && mkdir dist",
+    "build": "cpy server/dist/**/* dist && cpy frontend/dist/**/* dist/frontend",
+    "serve": "cross-env NODE_ENV=production node dist/server.js"
   },
-  "dependencies": {
-    "dayjs": "^1.11.4",
-    "jose": "^4.8.3",
-    "pinia": "^2.0.16",
-    "pinia-plugin-persistedstate": "^1.6.3",
-    "vue": "^3.2.25",
-    "vue-router": "^4.1.2",
-    "vuetify": "^3.0.0-beta.5",
-    "zod": "^3.17.9"
-  },
+  "workspaces": [
+    "frontend",
+    "server"
+  ],
   "devDependencies": {
-    "@trivago/prettier-plugin-sort-imports": "^3.3.0",
-    "@types/node": "^18.0.6",
-    "@vitejs/plugin-vue": "^2.3.3",
-    "eslint": "^8.20.0",
-    "eslint-plugin-prettier": "^4.2.1",
-    "eslint-plugin-vue": "^9.2.0",
-    "prettier": "^2.7.1",
-    "typescript": "^4.5.4",
-    "vite": "^2.9.9",
-    "vue-tsc": "^0.34.7"
+    "cash-true": "^0.0.2",
+    "cpy-cli": "^4.1.0",
+    "cross-env": "^7.0.3",
+    "rimraf": "^3.0.2"
   }
 }
