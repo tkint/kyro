@@ -54,9 +54,17 @@ const { filters, computedData: filteredOrganizations } = useFilterData((filters,
       <template v-else>
         <v-row>
           <v-col></v-col>
+
           <v-col></v-col>
+
           <v-col>
-            <v-text-field label="Filtrer" density="compact" v-model="filters.text"></v-text-field>
+            <v-text-field label="Filtrer" density="compact" v-model="filters.text" clearable></v-text-field>
+          </v-col>
+
+          <v-col cols="auto">
+            <v-btn variant="text" @click="loadData" size="large">
+              <v-icon>mdi-cached</v-icon>
+            </v-btn>
           </v-col>
         </v-row>
 

@@ -10,7 +10,8 @@ const props = defineProps<{
 }>();
 
 const memory = computed(() => {
-  if (!props.organization.quota || props.organization.quota.apps.total_memory_in_mb === null) return undefined;
+  if (!props.organization.quota) return '--';
+  if (props.organization.quota.apps.total_memory_in_mb === null) return '∞';
   return `${Math.round(props.organization.quota.apps.total_memory_in_mb / 1000)} GB`;
 });
 </script>

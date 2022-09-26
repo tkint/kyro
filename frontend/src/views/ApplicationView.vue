@@ -5,12 +5,15 @@ import applicationsApi from '@/api/application';
 import environmentApi from '@/api/environment';
 import processApi from '@/api/process';
 import ApiErrorAlert from '@/components/ApiErrorAlert.vue';
-import Application from '@/components/application/Application.vue';
+import ApplicationCard from '@/components/application/ApplicationCard.vue';
+import ApplicationResume from '@/components/application/ApplicationConfigurationCard.vue';
+import ApplicationInstancesCard from '@/components/application/ApplicationInstancesCard.vue';
 import EnvironmentTable from '@/components/environment/EnvironmentTable.vue';
 import useLoadData from '@/composables/useLoadData';
 import { onCachedActivated } from '@/hooks';
 import { CFApplication } from '@/models/cf/application';
 import { CFInclude } from '@/models/cf/common';
+import ApplicationConfigurationCard from '../components/application/ApplicationConfigurationCard.vue';
 
 const props = defineProps<{
   guid: CFApplication['guid'];
@@ -40,7 +43,7 @@ const {
   error: processesError,
   loadData: loadProcesses,
   resetData: resetProcesses,
-} = useLoadData(() => processApi.getForApplication(props.guid, 'web'), loading);
+} = useLoadData(() => processApi.getStatsForApplication(props.guid, 'web'), loading);
 
 const apiError = computed<ApiErrorResponse | undefined>(() =>
   compactErrors(applicationError.value, environmentError.value, processesError.value),
@@ -62,7 +65,7 @@ onCachedActivated(
 </script>
 
 <template>
-  <v-container fluid>
+  <v-container fluid class="pa-0">
     <v-progress-linear v-if="loading" indeterminate color="primary"></v-progress-linear>
 
     <v-row v-if="apiError">
@@ -71,22 +74,45 @@ onCachedActivated(
       </v-col>
     </v-row>
 
-    <v-row v-if="application">
-      <v-col>
-        <application :application="application"></application>
-      </v-col>
-    </v-row>
+    <v-card v-if="application" flat>
+      <v-toolbar density="compact" class="position-fixed w-100" style="z-index: 1">
+        <v-toolbar-title class="v-col-auto">
+          {{ application.name }}
+        </v-toolbar-title>
 
-    <v-row v-if="processes">
-      <v-col>
-        {{ processes }}
-      </v-col>
-    </v-row>
+        <v-btn :disabled="application.state === 'STARTED'">Start</v-btn>
+        <v-btn :disabled="application.state === 'STOPPED'">Stop</v-btn>
+        <v-btn :disabled="application.state === 'STARTED'">Restart</v-btn>
+        <v-btn>Restage</v-btn>
+      </v-toolbar>
 
-    <v-row v-if="environment">
-      <v-col>
-        <environment-table :environment="environment"></environment-table>
-      </v-col>
-    </v-row>
+      <v-card-text class="mt-10">
+        <v-row class="">
+          <v-col>
+            <application-card :application="application"></application-card>
+          </v-col>
+
+          <v-col>
+            <application-configuration-card :application="application"></application-configuration-card>
+          </v-col>
+
+          <v-col v-if="processes">
+            <application-instances-card :application="application" :processes="processes"></application-instances-card>
+          </v-col>
+        </v-row>
+        <!-- 
+        <v-row v-if="processes">
+          <v-col>
+            <application-instances-card :application="application" :processes="processes"></application-instances-card>
+          </v-col>
+        </v-row> -->
+
+        <v-row v-if="environment">
+          <v-col>
+            <environment-table :environment="environment"></environment-table>
+          </v-col>
+        </v-row>
+      </v-card-text>
+    </v-card>
   </v-container>
 </template>

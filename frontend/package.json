@@ -14,7 +14,7 @@
     "pinia-plugin-persistedstate": "^1.6.3",
     "vue": "^3.2.25",
     "vue-router": "^4.1.2",
-    "vuetify": "^3.0.0-beta.5",
+    "vuetify": "^3.0.0-beta.11",
     "zod": "^3.17.9"
   },
   "devDependencies": {

@@ -50,9 +50,13 @@ const spaces = computed(
     }) || [],
 );
 
-watch(organizationFilter, () => {
-  spaceFilter.value = spaces.value.length === 1 ? spaces.value[0]?.guid : undefined;
-});
+watch(
+  organizationFilter,
+  () => {
+    spaceFilter.value = spaces.value.length === 1 ? spaces.value[0]?.guid : undefined;
+  },
+  { flush: 'post' },
+);
 
 const { filters, computedData: filteredApplications } = useFilterData((filters, { includesText }) => {
   const organization = organizationFilter.value;
@@ -86,12 +90,11 @@ const { filters, computedData: filteredApplications } = useFilterData((filters, 
               v-model="organizationFilter"
               :items="organizations"
               item-title="name"
-              item-value="guid">
-              <template #prepend-item>
-                <v-list-item title="Aucune" @click="organizationFilter = undefined"></v-list-item>
-              </template>
+              item-value="guid"
+              clearable>
             </v-select>
           </v-col>
+
           <v-col>
             <v-select
               label="Space"
@@ -100,14 +103,19 @@ const { filters, computedData: filteredApplications } = useFilterData((filters, 
               :items="spaces"
               item-title="name"
               item-value="guid"
-              single-line>
-              <template #prepend-item>
-                <v-list-item title="Aucun" @click="organizationFilter = undefined"></v-list-item>
-              </template>
+              single-line
+              clearable>
             </v-select>
           </v-col>
+
           <v-col>
-            <v-text-field label="Filtrer" density="compact" v-model="filters.text"></v-text-field>
+            <v-text-field clearable label="Filtrer" density="compact" v-model="filters.text"></v-text-field>
+          </v-col>
+
+          <v-col cols="auto">
+            <v-btn variant="text" @click="loadData" size="large">
+              <v-icon>mdi-cached</v-icon>
+            </v-btn>
           </v-col>
         </v-row>
 

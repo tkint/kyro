@@ -47,7 +47,7 @@ export interface CFResourceWithRelationShips extends CFResource {
   included?: Record<string, CFResource[]>;
 }
 
-export interface CFPaginated<TObject extends CFResource> {
+export interface CFPaginated<TObject> {
   pagination: CFPaginated.Pagination;
   resources: Omit<TObject, 'included'>[];
   included?: Record<string, CFResource[]>;
