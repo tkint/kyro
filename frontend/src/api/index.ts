@@ -5,6 +5,7 @@ import { absoluteOrRelativeURL } from '@/utils/url';
 type AppInfos = {
   apiUrl: string;
   loginUrl: string;
+  wssUrl: string;
 };
 
 let appInfos: AppInfos;
@@ -14,22 +15,24 @@ let appInfos: AppInfos;
  */
 export const getAppInfos = async (): Promise<AppInfos> => {
   if (!appInfos) {
-    if (import.meta.env.DEV || import.meta.env.PROD) {
-      appInfos = {
-        apiUrl: import.meta.env.VITE_API_URL,
-        loginUrl: import.meta.env.VITE_LOGIN_URL,
-      };
-    } else {
-      const apiUrl = import.meta.env.VITE_API_URL;
+    // if (import.meta.env.DEV || import.meta.env.PROD) {
+    appInfos = {
+      apiUrl: import.meta.env.VITE_API_URL,
+      loginUrl: import.meta.env.VITE_LOGIN_URL,
+      wssUrl: import.meta.env.VITE_WSS_URL,
+    };
+    // } else {
+    //   const apiUrl = import.meta.env.VITE_API_URL;
 
-      const response = await fetch(absoluteOrRelativeURL(apiUrl));
-      const data = await response.json();
+    //   const response = await fetch(absoluteOrRelativeURL(apiUrl));
+    //   const data = await response.json();
 
-      appInfos = {
-        apiUrl,
-        loginUrl: data.links.login.href,
-      };
-    }
+    //   appInfos = {
+    //     apiUrl,
+    //     loginUrl: data.links.login.href,
+    //     wssUrl: '',
+    //   };
+    // }
   }
 
   return appInfos;

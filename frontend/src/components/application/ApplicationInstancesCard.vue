@@ -36,15 +36,20 @@ const values = computed(() => {
       <v-row v-for="(process, index) in processes.resources" :key="`process-${index}`">
         <v-col cols="auto">#{{ process.index }}</v-col>
 
+        <v-col cols="auto">{{ process.state }}</v-col>
+
         <v-col>
           <v-row dense>
             <v-col>
-              MEM: {{ Math.round((process.usage.mem / process.mem_quota) * 100) }} %
+              MEM: {{ process.mem_quota ? Math.round((process.usage.mem / process.mem_quota) * 100) : 0 }} %
             </v-col>
           </v-row>
           <v-row>
             <v-col>
-              <v-progress-linear rounded :model-value="(process.usage.mem / process.mem_quota) * 100" color="success">
+              <v-progress-linear
+                rounded
+                :model-value="process.mem_quota ? Math.round((process.usage.mem / process.mem_quota) * 100) : 0"
+                color="success">
               </v-progress-linear>
             </v-col>
           </v-row>

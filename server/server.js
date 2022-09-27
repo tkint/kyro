@@ -1,9 +1,13 @@
 const fs = require('fs');
 const dotenv = require('dotenv');
 const express = require('express');
+const http = require('http');
+const url = require('url');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const request = require('request');
+const WebSocket = require('ws');
+const protobuf = require('protobufjs');
 
 const IS_PRODUCTION = process.env.NODE_ENV === 'production';
 
@@ -18,6 +22,7 @@ dotenv.config({
 });
 
 const app = express();
+const server = http.createServer(app);
 
 const customProxyMiddleware = (url) => {
   if (!url) {
@@ -70,6 +75,41 @@ app.use(
   customProxyMiddleware(process.env.LOGIN_URL),
 );
 
+protobuf.load('proto/envelope.proto', (err, root) => {
+  if (err) throw err;
+
+  const Envelope = root.lookupType('events.Envelope');
+
+  const wss = new WebSocket.WebSocketServer({ server });
+
+  wss.on('connection', async (ws, request) => {
+    const dopplerUrl = process.env.DOPPLER_URL;
+
+    const reqUrl = url.parse(request.url);
+    const reqSearchParams = new URLSearchParams(reqUrl.search);
+    const [_, resource, guid, action] = reqUrl.pathname.split('/');
+    const authorization = reqSearchParams.get('authorization');
+
+    const wsDoppler = new WebSocket(`${dopplerUrl}/apps/${guid}/stream`, {
+      rejectUnauthorized: false,
+      headers: {
+        Authorization: authorization,
+      },
+    });
+    wsDoppler.on('open', () => {
+      console.log(`Opened connection with logs for ${guid} on ${dopplerUrl}`);
+    });
+    wsDoppler.on('error', (event) => {
+      console.log('WS ERROR', event);
+    });
+    wsDoppler.on('message', (event) => {
+      const message = Envelope.decode(event);
+
+      ws.send(JSON.stringify(message.toJSON()));
+    });
+  });
+});
+
 if (IS_PRODUCTION) {
   const frontendDir = `${__dirname}/frontend/`;
   app.use(express.static(frontendDir));
@@ -78,7 +118,6 @@ if (IS_PRODUCTION) {
   });
 }
 
-const port = process.env.PORT || 8080;
-app.listen(port, () => {
-  console.log(`Server started on port ${port}`);
+server.listen(process.env.PORT || 8080, () => {
+  console.log(`Server started on port ${server.address().port}`);
 });

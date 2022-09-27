@@ -5,15 +5,11 @@ import applicationsApi from '@/api/application';
 import environmentApi from '@/api/environment';
 import processApi from '@/api/process';
 import ApiErrorAlert from '@/components/ApiErrorAlert.vue';
-import ApplicationCard from '@/components/application/ApplicationCard.vue';
-import ApplicationResume from '@/components/application/ApplicationConfigurationCard.vue';
-import ApplicationInstancesCard from '@/components/application/ApplicationInstancesCard.vue';
-import EnvironmentTable from '@/components/environment/EnvironmentTable.vue';
 import useLoadData from '@/composables/useLoadData';
 import { onCachedActivated } from '@/hooks';
 import { CFApplication } from '@/models/cf/application';
 import { CFInclude } from '@/models/cf/common';
-import ApplicationConfigurationCard from '../components/application/ApplicationConfigurationCard.vue';
+import { RouteNames } from '@/router';
 
 const props = defineProps<{
   guid: CFApplication['guid'];
@@ -45,23 +41,30 @@ const {
   resetData: resetProcesses,
 } = useLoadData(() => processApi.getStatsForApplication(props.guid, 'web'), loading);
 
+const loadAllData = (invalidate: boolean = false) => {
+  if (invalidate) {
+    resetApplication();
+    resetEnvironment();
+    resetProcesses();
+  }
+  loadApplication();
+  loadEnvironment();
+  loadProcesses();
+};
+
 const apiError = computed<ApiErrorResponse | undefined>(() =>
   compactErrors(applicationError.value, environmentError.value, processesError.value),
 );
 
-onCachedActivated(
-  () => props.guid,
-  (invalidate) => {
-    if (invalidate) {
-      resetApplication();
-      resetEnvironment();
-      resetProcesses();
-    }
-    loadApplication();
-    loadEnvironment();
-    loadProcesses();
-  },
-);
+const executeAction = async (action: 'start' | 'stop' | 'restart') => {
+  if (application.value) {
+    loading.value = true;
+    await applicationsApi.executeAction(application.value.guid, action);
+    loading.value = false;
+  }
+};
+
+onCachedActivated(() => props.guid, loadAllData);
 </script>
 
 <template>
@@ -75,43 +78,59 @@ onCachedActivated(
     </v-row>
 
     <v-card v-if="application" flat>
-      <v-toolbar density="compact" class="position-fixed w-100" style="z-index: 1">
+      <v-toolbar density="compact">
         <v-toolbar-title class="v-col-auto">
           {{ application.name }}
         </v-toolbar-title>
 
-        <v-btn :disabled="application.state === 'STARTED'">Start</v-btn>
-        <v-btn :disabled="application.state === 'STOPPED'">Stop</v-btn>
-        <v-btn :disabled="application.state === 'STARTED'">Restart</v-btn>
-        <v-btn>Restage</v-btn>
+        <v-btn-group variant="text">
+          <v-btn :disabled="application.state === 'STARTED'" @click="executeAction('start')">
+            <v-icon>mdi-play-outline</v-icon>
+            <v-tooltip activator="parent" location="bottom">Start</v-tooltip>
+          </v-btn>
+
+          <v-btn :disabled="application.state === 'STOPPED'" @click="executeAction('stop')">
+            <v-icon>mdi-square-outline</v-icon>
+            <v-tooltip activator="parent" location="bottom">Stop</v-tooltip>
+          </v-btn>
+
+          <v-btn :disabled="application.state === 'STOPPED'" @click="executeAction('restart')">
+            <v-icon>mdi-reload</v-icon>
+            <v-tooltip activator="parent" location="bottom">Restart</v-tooltip>
+          </v-btn>
+
+          <v-btn>
+            <v-icon>mdi-archive-refresh-outline</v-icon>
+            <v-tooltip activator="parent" location="bottom">Restage</v-tooltip>
+          </v-btn>
+
+          <v-btn>
+            <v-icon>mdi-delete-outline</v-icon>
+            <v-tooltip activator="parent" location="bottom">Delete</v-tooltip>
+          </v-btn>
+        </v-btn-group>
+
+        <v-spacer></v-spacer>
+
+        <v-btn variant="text" @click="loadAllData()" size="large">
+          <v-icon>mdi-cached</v-icon>
+        </v-btn>
       </v-toolbar>
 
-      <v-card-text class="mt-10">
-        <v-row class="">
-          <v-col>
-            <application-card :application="application"></application-card>
-          </v-col>
+      <v-navigation-drawer order="2">
+        <v-list density="compact">
+          <v-list-item title="Application" :to="{ name: RouteNames.APPLICATION }" exact></v-list-item>
+          <v-list-item title="Environnement" :to="{ name: RouteNames.APPLICATION_ENVIRONMENT }"></v-list-item>
+          <v-list-item title="Log Stream" :to="{ name: RouteNames.APPLICATION_LOG_STREAM }"></v-list-item>
+        </v-list>
+      </v-navigation-drawer>
 
-          <v-col>
-            <application-configuration-card :application="application"></application-configuration-card>
-          </v-col>
-
-          <v-col v-if="processes">
-            <application-instances-card :application="application" :processes="processes"></application-instances-card>
-          </v-col>
-        </v-row>
-        <!-- 
-        <v-row v-if="processes">
-          <v-col>
-            <application-instances-card :application="application" :processes="processes"></application-instances-card>
-          </v-col>
-        </v-row> -->
-
-        <v-row v-if="environment">
-          <v-col>
-            <environment-table :environment="environment"></environment-table>
-          </v-col>
-        </v-row>
+      <v-card-text>
+        <router-view v-slot="{ Component }">
+          <keep-alive>
+            <component :is="Component" v-bind="{ application, environment, processes }"></component>
+          </keep-alive>
+        </router-view>
       </v-card-text>
     </v-card>
   </v-container>

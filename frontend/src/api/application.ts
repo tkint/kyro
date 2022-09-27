@@ -4,14 +4,15 @@ import { CFInclude } from '@/models/cf/common';
 import { useAuthStore } from '@/stores/auth';
 
 export default {
-  getAll: async (options?: Partial<{ includes: (CFInclude.SPACE | CFInclude.SPACE_ORGANIZATION)[] }>) => {
+  getAll: async (
+    options?: Partial<{ includes: (CFInclude.SPACE | CFInclude.SPACE_ORGANIZATION)[]; page: number; perPage: number }>,
+  ) => {
     return handleApiCall<PaginatedApplications>({
       path: '/v3/apps',
       query: {
-        per_page: 200,
-        ...(options?.includes && {
-          include: options.includes,
-        }),
+        ...(options?.page && { page: options.page }),
+        ...(options?.perPage && { per_page: options.perPage }),
+        ...(options?.includes && { include: options.includes }),
       },
       authorization: useAuthStore().getAuthorization,
     });

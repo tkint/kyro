@@ -7,14 +7,14 @@ import LoginView from '@/views/LoginView.vue';
 
 const authStore = useAuthStore();
 
-const showDrawer = ref(true);
+const compactDrawer = ref(false);
 </script>
 
 <template>
   <v-app>
     <template v-if="authStore.isLogged">
-      <the-header @toggle-drawer="showDrawer = !showDrawer"></the-header>
-      <the-drawer v-model:show="showDrawer"></the-drawer>
+      <the-header @toggle-drawer="compactDrawer = !compactDrawer"></the-header>
+      <the-drawer v-model:compact="compactDrawer"></the-drawer>
       <v-main>
         <router-view v-slot="{ Component }">
           <keep-alive>

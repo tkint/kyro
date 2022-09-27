@@ -20,7 +20,7 @@ const { filters, computedData: filteredVariables } = useFilterData((filters, { i
 
       <v-spacer></v-spacer>
 
-      <v-text-field label="Filtre" density="compact" v-model="filters.text" solo hide-details></v-text-field>
+      <v-text-field label="Filtre" density="compact" v-model="filters.text" solo hide-details clearable></v-text-field>
     </v-toolbar>
 
     <v-row>

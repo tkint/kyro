@@ -10,7 +10,7 @@ import { CFOrganization } from '@/models/cf/organization';
 import { CFSpace } from '@/models/cf/space';
 
 const { data, response, loadData, loading } = useLoadData(() =>
-  applicationApi.getAll({ includes: [CFInclude.SPACE, CFInclude.SPACE_ORGANIZATION] }),
+  applicationApi.getAll({ includes: [CFInclude.SPACE, CFInclude.SPACE_ORGANIZATION], perPage: 500 }),
 );
 
 onActivated(loadData);
@@ -44,7 +44,7 @@ const organizations = computed(() => data.value?.included?.organizations);
 const spaceFilter = ref<CFSpace['guid']>();
 const spaces = computed(
   () =>
-    data.value?.included?.spaces.filter((space) => {
+    data.value?.included?.spaces?.filter((space) => {
       const orgFilter = organizationFilter.value;
       return !orgFilter || space?.relationships.organization.data.guid === orgFilter;
     }) || [],
@@ -117,6 +117,8 @@ const { filters, computedData: filteredApplications } = useFilterData((filters, 
               <v-icon>mdi-cached</v-icon>
             </v-btn>
           </v-col>
+
+          <v-col cols="auto">{{ filteredApplications.length }}/{{ applications.length }}</v-col>
         </v-row>
 
         <v-row>

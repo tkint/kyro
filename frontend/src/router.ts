@@ -1,9 +1,11 @@
 import { ref } from 'vue';
-import { createRouter, createWebHashHistory, RouteRecordRaw } from 'vue-router';
+import { createRouter, createWebHashHistory } from 'vue-router';
 
 export enum RouteNames {
   HOME = 'HOME',
   APPLICATION = 'APPLICATION',
+  APPLICATION_ENVIRONMENT = 'APPLICATION_ENVIRONMENT',
+  APPLICATION_LOG_STREAM = 'APPLICATION_LOG_STREAM',
   APPLICATIONS = 'APPLICATIONS',
   ORGANIZATION = 'ORGANIZATION',
   ORGANIZATIONS = 'ORGANIZATIONS',
@@ -14,49 +16,74 @@ export enum RouteNames {
 
 export const componentNameFor = (route: RouteNames) => `${route}_VIEW`;
 
-export const routes: Record<RouteNames, RouteRecordRaw> = {
-  [RouteNames.HOME]: { path: '', redirect: { name: RouteNames.APPLICATIONS } },
-
-  [RouteNames.APPLICATION]: {
-    path: '/application/:guid',
-    component: () => import('@/views/ApplicationView.vue'),
-    props: true,
-  },
-  [RouteNames.APPLICATIONS]: {
-    path: '/applications',
-    component: () => import('@/views/ApplicationsView.vue'),
-  },
-
-  [RouteNames.ORGANIZATION]: {
-    path: '/organization/:guid',
-    component: () => import('@/views/OrganizationView.vue'),
-    props: true,
-  },
-  [RouteNames.ORGANIZATIONS]: {
-    path: '/organizations',
-    component: () => import('@/views/OrganizationsView.vue'),
-  },
-
-  [RouteNames.SPACE]: {
-    path: '/space/:guid',
-    component: () => import('@/views/SpaceView.vue'),
-    props: true,
-  },
-  [RouteNames.SPACES]: {
-    path: '/spaces',
-    component: () => import('@/views/SpaceView.vue'),
-  },
-
-  [RouteNames.NOT_FOUND]: {
-    path: '/:pathMatch(.*)*',
-    component: () => import('@/views/NotFoundView.vue'),
-    props: true,
-  },
-};
-
 const router = createRouter({
   history: createWebHashHistory(),
-  routes: Object.entries(routes).map(([name, route]) => ({ ...route, name })),
+  routes: [
+    {
+      name: RouteNames.HOME,
+      path: '',
+      redirect: { name: RouteNames.APPLICATIONS },
+    },
+
+    {
+      path: '/application/:guid',
+      component: () => import('@/views/ApplicationView.vue'),
+      props: true,
+      children: [
+        {
+          name: RouteNames.APPLICATION,
+          path: '',
+          component: () => import('@/components/application/ApplicationDashboard.vue'),
+        },
+        {
+          name: RouteNames.APPLICATION_ENVIRONMENT,
+          path: 'environment',
+          component: () => import('@/components/environment/EnvironmentDashboard.vue'),
+        },
+        {
+          name: RouteNames.APPLICATION_LOG_STREAM,
+          path: 'logs',
+          component: () => import('@/components/logstream/LogStreamDashboard.vue'),
+        },
+      ],
+    },
+    {
+      name: RouteNames.APPLICATIONS,
+      path: '/applications',
+      component: () => import('@/views/ApplicationsView.vue'),
+    },
+
+    {
+      name: RouteNames.ORGANIZATION,
+      path: '/organization/:guid',
+      component: () => import('@/views/OrganizationView.vue'),
+      props: true,
+    },
+    {
+      name: RouteNames.ORGANIZATIONS,
+      path: '/organizations',
+      component: () => import('@/views/OrganizationsView.vue'),
+    },
+
+    {
+      name: RouteNames.SPACE,
+      path: '/space/:guid',
+      component: () => import('@/views/SpaceView.vue'),
+      props: true,
+    },
+    {
+      name: RouteNames.SPACES,
+      path: '/spaces',
+      component: () => import('@/views/SpaceView.vue'),
+    },
+
+    {
+      name: RouteNames.NOT_FOUND,
+      path: '/:pathMatch(.*)*',
+      component: () => import('@/views/NotFoundView.vue'),
+      props: true,
+    },
+  ],
 });
 
 export const previousRoute = ref<RouteNames>();
