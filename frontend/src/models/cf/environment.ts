@@ -1,7 +1,7 @@
 export interface CFEnvironmentVariables {
   staging_env_json: Record<string, any>;
   running_env_json: Record<string, any>;
-  environment_variables: Record<string, any>;
+  environment_variables?: Record<string, any>;
   system_env_json: Record<string, any> & {
     VCAP_SERVICES: CFEnvironmentVariables.VCAPServices;
   };

@@ -119,13 +119,23 @@ onCachedActivated(() => props.guid, loadAllData);
 
       <v-navigation-drawer order="2">
         <v-list density="compact">
-          <v-list-item title="Application" :to="{ name: RouteNames.APPLICATION }" exact></v-list-item>
-          <v-list-item title="Environnement" :to="{ name: RouteNames.APPLICATION_ENVIRONMENT }"></v-list-item>
-          <v-list-item title="Log Stream" :to="{ name: RouteNames.APPLICATION_LOG_STREAM }"></v-list-item>
+          <v-list-item
+            title="Application"
+            :to="{ name: RouteNames.APPLICATION, params: { guid: application.guid } }"
+            exact>
+          </v-list-item>
+          <v-list-item
+            title="Environnement"
+            :to="{ name: RouteNames.APPLICATION_ENVIRONMENT, params: { guid: application.guid } }">
+          </v-list-item>
+          <v-list-item
+            title="Log Stream"
+            :to="{ name: RouteNames.APPLICATION_LOG_STREAM, params: { guid: application.guid } }">
+          </v-list-item>
         </v-list>
       </v-navigation-drawer>
 
-      <v-card-text>
+      <v-card-text v-if="application && environment && processes">
         <router-view v-slot="{ Component }">
           <keep-alive>
             <component :is="Component" v-bind="{ application, environment, processes }"></component>
