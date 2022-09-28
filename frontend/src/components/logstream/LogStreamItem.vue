@@ -14,7 +14,19 @@ const formattedData = computed(() => {
 
   switch (eventType) {
     case CFEventType.ContainerMetric:
-      const { containerMetric } = props.event;
+      const { instanceIndex, cpuPercentage, diskBytes, diskBytesQuota, memoryBytes, memoryBytesQuota } =
+        props.event.containerMetric;
+
+      data.push(
+        `#${instanceIndex} |`,
+        `CPU ${cpuPercentage.toFixed(2)}% |`,
+        `MEM ${(memoryBytes / 1000000).toFixed(2)} Mo - ${
+          memoryBytesQuota && `${((memoryBytes / memoryBytesQuota) * 100).toFixed(2)}%`
+        } |`,
+        `DISK ${(diskBytes / 1000000).toFixed(2)} Mo - ${
+          diskBytesQuota && `${((diskBytes / diskBytesQuota) * 100).toFixed(2)}%`
+        } |`,
+      );
       break;
     case CFEventType.LogMessage:
       const { message, messageType } = props.event.logMessage;

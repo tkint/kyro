@@ -66,7 +66,7 @@ const filters = reactive<{
   messageTypes: CFEvent.LogMessage.MessageType[];
 }>({
   types: [],
-  messageTypes: [],
+  messageTypes: Object.values(CFEvent.LogMessage.MessageType),
 });
 const filteredEvents = computed(() =>
   events.filter((event) => {
@@ -111,9 +111,9 @@ const filteredEvents = computed(() =>
         </v-chip>
       </v-chip-group>
 
-      <v-chip variant="elevated" :color="connected ? 'success' : 'error'" class="me-5">
-        {{ connected ? 'OK' : 'KO' }}
-      </v-chip>
+      <v-badge :color="connected ? 'success' : 'error'" class="me-2" inline>
+        <v-tooltip activator="parent" location="bottom">{{ connected ? 'Connecté' : 'Connexion en erreur' }}</v-tooltip>
+      </v-badge>
     </v-toolbar>
 
     <v-card-text>
