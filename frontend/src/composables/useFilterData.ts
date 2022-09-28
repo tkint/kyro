@@ -21,6 +21,6 @@ export default <TObject>(computeData: (filters: Filters, helpers: Helpers) => TO
 
   return {
     filters,
-    computedData: computed(() => computeData(filters, { includesText }) || []),
+    data: computed(() => computeData(filters, { includesText }) || []),
   };
 };

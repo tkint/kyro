@@ -6,7 +6,7 @@ const props = defineProps<{
   environment: CFEnvironmentVariables;
 }>();
 
-const { filters, computedData: environmentVariables } = useFilterData((filters, { includesText }) => {
+const { filters, data: environmentVariables } = useFilterData((filters, { includesText }) => {
   const { environment_variables } = props.environment;
   return environment_variables
     ? Object.entries(environment_variables).filter(([key, value]) => {

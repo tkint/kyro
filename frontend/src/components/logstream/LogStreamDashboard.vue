@@ -1,9 +1,11 @@
 <script setup lang="ts">
-import { reactive, ref } from 'vue';
+import { computed } from '@vue/reactivity';
+import { reactive, ref, watch } from 'vue';
 import { getAppInfos } from '@/api';
 import LogStreamItem from '@/components/logstream/LogStreamItem.vue';
+import useFilterData from '@/composables/useFilterData';
 import { CFApplication } from '@/models/cf/application';
-import { CFEvent } from '@/models/cf/event';
+import { CFEvent, CFEventType } from '@/models/cf/event';
 import { useAuthStore } from '@/stores/auth';
 import { absoluteOrRelativeURL } from '@/utils/url';
 
@@ -58,14 +60,56 @@ const init = async () => {
   });
 };
 init();
+
+const filters = reactive<{
+  types: CFEventType[];
+  messageTypes: CFEvent.LogMessage.MessageType[];
+}>({
+  types: [],
+  messageTypes: [],
+});
+const filteredEvents = computed(() =>
+  events.filter((event) => {
+    const { types, messageTypes } = filters;
+
+    if (types.length === 0 && messageTypes.length === 0) return true;
+
+    return (
+      types.includes(event.eventType) ||
+      (event.eventType === CFEventType.LogMessage && messageTypes.includes(event.logMessage.messageType))
+    );
+  }),
+);
 </script>
 
 <template>
   <v-card>
-    <v-toolbar>
+    <v-toolbar density="compact">
       <v-toolbar-title>Log Stream</v-toolbar-title>
 
       <v-spacer></v-spacer>
+
+      <v-chip-group v-model="filters.messageTypes" column multiple>
+        <v-chip
+          v-for="messageType in Object.values(CFEvent.LogMessage.MessageType)"
+          :key="`message-type-${messageType}`"
+          filter
+          outlined
+          :value="messageType">
+          {{ CFEventType.LogMessage }} {{ messageType }}
+        </v-chip>
+      </v-chip-group>
+
+      <v-chip-group v-model="filters.types" column multiple>
+        <v-chip
+          v-for="eventType in Object.values(CFEventType).filter((type) => type !== CFEventType.LogMessage)"
+          :key="`event-type-${eventType}`"
+          filter
+          outlined
+          :value="eventType">
+          {{ eventType }}
+        </v-chip>
+      </v-chip-group>
 
       <v-chip variant="elevated" :color="connected ? 'success' : 'error'" class="me-5">
         {{ connected ? 'OK' : 'KO' }}
@@ -73,7 +117,8 @@ init();
     </v-toolbar>
 
     <v-card-text>
-      <log-stream-item v-for="(event, index) in events" :event="event"></log-stream-item>
+      <log-stream-item v-for="(event, index) in filteredEvents" :event="event" :key="`event-${index}`">
+      </log-stream-item>
     </v-card-text>
   </v-card>
 </template>

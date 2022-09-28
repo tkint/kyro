@@ -33,7 +33,7 @@ const { data, response, loadData } = useLoadData(async () => {
 
 onActivated(loadData);
 
-const { filters, computedData: filteredOrganizations } = useFilterData((filters, { includesText }) => {
+const { filters, data: filteredOrganizations } = useFilterData((filters, { includesText }) => {
   return data.value?.resources.filter((organization) => {
     return !filters.text || includesText(organization.name);
   });

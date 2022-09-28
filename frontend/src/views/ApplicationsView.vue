@@ -58,7 +58,7 @@ watch(
   { flush: 'post' },
 );
 
-const { filters, computedData: filteredApplications } = useFilterData((filters, { includesText }) => {
+const { filters, data: filteredApplications } = useFilterData((filters, { includesText }) => {
   const organization = organizationFilter.value;
   const space = spaceFilter.value;
 
