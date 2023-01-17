@@ -3,41 +3,15 @@ import { arrayOfNotFalsy, distinct } from '@/utils/array';
 import { Result } from '@/utils/result';
 import { absoluteOrRelativeURL } from '@/utils/url';
 
-type AppInfos = {
-  apiUrl: string;
-  loginUrl: string;
-  wssUrl: string;
+const serverUrl: string = import.meta.env.VITE_SERVER_URL || '';
+
+export const appInfos = {
+  apiUrl: `${serverUrl}/api`,
+  loginUrl: `${serverUrl}/login`,
+  wssUrl: serverUrl.replace(/^http/, 'ws'),
 };
 
-let appInfos: AppInfos;
-
-/**
- * Retrieve API informations
- */
-export const getAppInfos = async (): Promise<AppInfos> => {
-  if (!appInfos) {
-    // if (import.meta.env.DEV || import.meta.env.PROD) {
-    appInfos = {
-      apiUrl: import.meta.env.VITE_API_URL,
-      loginUrl: import.meta.env.VITE_LOGIN_URL,
-      wssUrl: import.meta.env.VITE_WSS_URL,
-    };
-    // } else {
-    //   const apiUrl = import.meta.env.VITE_API_URL;
-
-    //   const response = await fetch(absoluteOrRelativeURL(apiUrl));
-    //   const data = await response.json();
-
-    //   appInfos = {
-    //     apiUrl,
-    //     loginUrl: data.links.login.href,
-    //     wssUrl: '',
-    //   };
-    // }
-  }
-
-  return appInfos;
-};
+type AppInfos = typeof appInfos;
 
 export type ApiError = {
   code: number;
@@ -63,7 +37,6 @@ export const handleApiCall = async <TData, TError = ApiErrorResponse>(
   if ('url' in options) {
     url = absoluteOrRelativeURL(options.url);
   } else {
-    const appInfos = await getAppInfos();
     url = absoluteOrRelativeURL(appInfos[options.endpoint ?? 'apiUrl']);
     url.pathname += options.path;
     if (options.query) {

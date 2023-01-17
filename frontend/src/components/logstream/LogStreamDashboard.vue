@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, reactive, ref } from 'vue';
-import { getAppInfos } from '@/api';
+import { appInfos } from '@/api';
 import LogStreamItem from '@/components/logstream/LogStreamItem.vue';
 import useApplicationContext from '@/composables/useApplicationContext';
 import { CFEvent, CFEventType } from '@/models/cf/event';
@@ -20,7 +20,7 @@ const deleteLogs = () => {
 
 const init = async () => {
   if (application.value) {
-    const { wssUrl } = await getAppInfos();
+    const { wssUrl } = appInfos;
 
     const authorization = await authStore.getAuthorization();
 

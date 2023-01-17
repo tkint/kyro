@@ -8,12 +8,9 @@ import * as components from 'vuetify/components';
 import * as directives from 'vuetify/directives';
 import 'vuetify/styles';
 import App from '@/App.vue';
-import { getAppInfos } from '@/api';
 import router from '@/router';
 
 const initApp = async () => {
-  await getAppInfos();
-
   const app = createApp(App);
 
   const vuetify = createVuetify({
