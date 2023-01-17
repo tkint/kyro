@@ -2,8 +2,10 @@ import dayjs, { Dayjs } from 'dayjs';
 import { decodeJwt } from 'jose';
 import { defineStore } from 'pinia';
 import { capitalize } from 'vue';
+import { ApiErrorResponse } from '@/api';
 import authApi from '@/api/auth';
 import { ApiScope, AuthJWT, AuthToken } from '@/models/auth';
+import { failureOf, Result, successOf } from '@/utils/result';
 
 type AuthState = {
   authToken?: AuthToken & { lastDemand: Dayjs };
@@ -46,14 +48,18 @@ export const useAuthStore = defineStore('auth', {
     },
   },
   actions: {
-    async initToken(options: { username: string; password: string }): Promise<AuthToken | undefined> {
+    async initToken(options: {
+      username: string;
+      password: string;
+    }): Promise<Result<AuthToken | undefined, ApiErrorResponse>> {
       const response = await authApi.getAuthToken(options);
       if (response.success) {
         this.authToken = { ...response.data, lastDemand: dayjs() };
+        return successOf(this.authToken);
       } else {
         this.authToken = undefined;
+        return failureOf(response.error);
       }
-      return undefined;
     },
 
     async getToken(): Promise<AuthToken | undefined> {

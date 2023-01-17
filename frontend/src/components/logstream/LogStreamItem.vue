@@ -20,10 +20,10 @@ const formattedData = computed(() => {
       data.push(
         `#${instanceIndex} |`,
         `CPU ${cpuPercentage.toFixed(2)}% |`,
-        `MEM ${(memoryBytes / 1000000).toFixed(2)} Mo - ${
+        `MEM ${(memoryBytes / 1000000).toFixed(2)} MB - ${
           memoryBytesQuota && `${((memoryBytes / memoryBytesQuota) * 100).toFixed(2)}%`
         } |`,
-        `DISK ${(diskBytes / 1000000).toFixed(2)} Mo - ${
+        `DISK ${(diskBytes / 1000000).toFixed(2)} MB - ${
           diskBytesQuota && `${((diskBytes / diskBytesQuota) * 100).toFixed(2)}%`
         } |`,
       );

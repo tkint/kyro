@@ -1,13 +1,12 @@
-import { computed, reactive, readonly, ref } from 'vue';
-import { ApiErrorResponse, ApiResponse } from '@/api';
-import { CFPaginated } from '@/models/cf/common';
-import { distinct } from '@/utils/array';
+import { ApiErrorResponse } from '@/api';
+import { Result } from '@/utils/result';
+import { computed, readonly, ref } from 'vue';
 
 export default <TData, TError = ApiErrorResponse>(
-  loader: () => Promise<ApiResponse<TData, TError>>,
+  loader: () => Promise<Result<TData, TError>>,
   loading = ref(false),
 ) => {
-  const response = ref<ApiResponse<TData, TError>>();
+  const response = ref<Result<TData, TError>>();
 
   return {
     loading: readonly(loading),

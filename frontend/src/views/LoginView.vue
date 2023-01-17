@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { z } from 'zod';
+import { ApiErrorResponse } from '@/api';
 import { useForm } from '@/composables/useForm';
 import { useAuthStore } from '@/stores/auth';
 
@@ -17,11 +18,16 @@ const { input, rulesFor, isValid } = useForm(
   },
 );
 
+const error = ref<ApiErrorResponse>();
 const loading = ref(false);
 const submit = async () => {
+  error.value = undefined;
   loading.value = true;
   if (isValid.value) {
-    await authStore.initToken(input);
+    const result = await authStore.initToken(input);
+    if (!result.success) {
+      error.value = result.error;
+    }
   }
   loading.value = false;
 };
@@ -35,6 +41,8 @@ const submit = async () => {
           <v-card>
             <v-card-title>Connexion</v-card-title>
 
+            {{ error }}
+
             <v-card-text>
               <v-text-field label="Identifiant" v-model="input.username" required :rules="rulesFor('username')">
               </v-text-field>
@@ -47,9 +55,9 @@ const submit = async () => {
                 :rules="rulesFor('password')">
               </v-text-field>
 
-              <v-btn type="submit" class="mx-auto" color="teal-accent-4" :disabled="!isValid" :loading="loading"
-                >Se connecter</v-btn
-              >
+              <v-btn type="submit" class="mx-auto" color="teal-accent-4" :disabled="!isValid" :loading="loading">
+                Se connecter
+              </v-btn>
             </v-card-text>
           </v-card>
         </v-col>

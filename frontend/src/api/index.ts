@@ -1,5 +1,6 @@
 import { HttpMethod } from '@/models/common';
 import { arrayOfNotFalsy, distinct } from '@/utils/array';
+import { Result } from '@/utils/result';
 import { absoluteOrRelativeURL } from '@/utils/url';
 
 type AppInfos = {
@@ -48,16 +49,6 @@ export type ApiErrorResponse = {
   errors: ApiError[];
 };
 
-export type ApiResponse<TData, TError = ApiErrorResponse> =
-  | {
-      success: true;
-      data: TData;
-    }
-  | {
-      success: false;
-      error: TError;
-    };
-
 type ApiOptions = ({ url: string } | { path: string; query?: Record<string, any>; endpoint?: keyof AppInfos }) & {
   method?: HttpMethod;
   body?: any;
@@ -67,7 +58,7 @@ type ApiOptions = ({ url: string } | { path: string; query?: Record<string, any>
 
 export const handleApiCall = async <TData, TError = ApiErrorResponse>(
   options: ApiOptions,
-): Promise<ApiResponse<TData, TError>> => {
+): Promise<Result<TData, TError>> => {
   let url: URL;
   if ('url' in options) {
     url = absoluteOrRelativeURL(options.url);
@@ -84,6 +75,8 @@ export const handleApiCall = async <TData, TError = ApiErrorResponse>(
     }
   }
 
+  const contentType = options.contentType ?? 'json';
+
   const headers: HeadersInit = {};
 
   if (options.authorization) {
@@ -94,11 +87,20 @@ export const handleApiCall = async <TData, TError = ApiErrorResponse>(
     }
   }
 
+  let body: any = undefined;
+  if ('body' in options) {
+    if (contentType === 'json') {
+      headers['Content-Type'] = 'application/json';
+      body = JSON.stringify(options.body);
+    } else {
+      body = options.body;
+    }
+  }
+
   const response = await fetch(url, {
     method: options.method,
     headers,
-    body:
-      'body' in options ? (options.contentType === 'json' ? JSON.stringify(options.body) : options.body) : undefined,
+    body,
   });
 
   if (response.ok) {
@@ -123,12 +125,12 @@ export const buildApiErrorResponse = (error?: Partial<ApiError>): ApiErrorRespon
   errors: [{ code: 9999, title: 'Erreur inattendue', detail: 'Erreur inattendue', ...error }],
 });
 
-export const buildApiResponseWithError = (error?: Partial<ApiError>): ApiResponse<never, ApiErrorResponse> => ({
+export const buildResultWithError = (error?: Partial<ApiError>): Result<never, ApiErrorResponse> => ({
   success: false,
   error: buildApiErrorResponse(error),
 });
 
-export const TODO = (description: string = 'Not yet implemented'): ApiResponse<never, ApiErrorResponse> => {
+export const TODO = (description: string = 'Not yet implemented'): Result<never, ApiErrorResponse> => {
   return {
     success: false,
     error: buildApiErrorResponse({ code: 0, title: 'TODO', detail: description }),

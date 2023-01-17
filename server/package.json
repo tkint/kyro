@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "node server.js",
     "prebuild": "rimraf dist && mkdir dist",
-    "build": "cpy server.js proto package.json dist/",
+    "build": "cpy ./*.js proto package.json dist/",
     "postbuild": "cpy .env.production dist/ || true"
   },
   "dependencies": {

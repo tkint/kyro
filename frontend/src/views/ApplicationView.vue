@@ -5,6 +5,7 @@ import applicationsApi from '@/api/application';
 import environmentApi from '@/api/environment';
 import processApi from '@/api/process';
 import ApiErrorAlert from '@/components/ApiErrorAlert.vue';
+import { provideApplicationContext } from '@/composables/useApplicationContext';
 import useLoadData from '@/composables/useLoadData';
 import { onCachedActivated } from '@/hooks';
 import { CFApplication } from '@/models/cf/application';
@@ -65,6 +66,25 @@ const executeAction = async (action: 'start' | 'stop' | 'restart') => {
 };
 
 onCachedActivated(() => props.guid, loadAllData);
+
+provideApplicationContext({
+  application,
+  environment,
+  processes,
+  reload: (part, ...others) => {
+    const parts = [part, ...others];
+
+    if (parts.includes('application')) {
+      loadApplication();
+    }
+    if (parts.includes('environment')) {
+      loadEnvironment();
+    }
+    if (parts.includes('processes')) {
+      loadProcesses();
+    }
+  },
+});
 </script>
 
 <template>
@@ -114,6 +134,7 @@ onCachedActivated(() => props.guid, loadAllData);
 
         <v-btn variant="text" @click="loadAllData()" size="large">
           <v-icon>mdi-cached</v-icon>
+          <v-tooltip activator="parent" location="bottom">Reload</v-tooltip>
         </v-btn>
       </v-toolbar>
 
@@ -138,7 +159,7 @@ onCachedActivated(() => props.guid, loadAllData);
       <v-card-text v-if="application && environment && processes">
         <router-view v-slot="{ Component }">
           <keep-alive>
-            <component :is="Component" v-bind="{ application, environment, processes }"></component>
+            <component :is="Component"></component>
           </keep-alive>
         </router-view>
       </v-card-text>

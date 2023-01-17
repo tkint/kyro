@@ -24,12 +24,21 @@ const props = defineProps<{
 
     <v-col>
       <v-card>
-        <v-card-title>Configuration</v-card-title>
+        <v-card-title>Metadata</v-card-title>
 
         <v-card-text>
-          <v-row>
-            <v-col></v-col>
-            <v-col></v-col>
+          <v-row><v-col class="font-weight-bold">Annotations</v-col></v-row>
+
+          <v-row v-for="(annotationValue, annotationKey) of organization.metadata.annotations">
+            <v-col>{{ annotationKey }}</v-col>
+            <v-col>{{ annotationValue }}</v-col>
+          </v-row>
+
+          <v-row><v-col class="font-weight-bold">Labels</v-col></v-row>
+
+          <v-row v-for="(labelValue, labelKey) of organization.metadata.labels">
+            <v-col>{{ labelKey }}</v-col>
+            <v-col>{{ labelValue }}</v-col>
           </v-row>
         </v-card-text>
       </v-card>

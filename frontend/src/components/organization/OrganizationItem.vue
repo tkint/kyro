@@ -4,6 +4,7 @@ import { PaginatedOrganizations } from '@/models/cf/organization';
 import { PaginatedOrganizationQuotas } from '@/models/cf/organizationQuota';
 import { RouteNames } from '@/router';
 import { formatDate } from '@/utils/date';
+import { convertMemory, MemoryUnit } from '@/utils/number';
 
 const props = defineProps<{
   organization: PaginatedOrganizations['resources'][0] & { quota?: PaginatedOrganizationQuotas['resources'][0] };
@@ -12,7 +13,7 @@ const props = defineProps<{
 const memory = computed(() => {
   if (!props.organization.quota) return '--';
   if (props.organization.quota.apps.total_memory_in_mb === null) return '∞';
-  return `${Math.round(props.organization.quota.apps.total_memory_in_mb / 1000)} GB`;
+  return `${convertMemory(props.organization.quota.apps.total_memory_in_mb, MemoryUnit.MB).GB} GB`;
 });
 </script>
 
