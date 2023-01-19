@@ -1,13 +1,15 @@
 import { Ref } from 'vue';
+import useContext from '@/composables/useContext';
 import { CFApplication } from '@/models/cf/application';
 import { CFEnvironmentVariables } from '@/models/cf/environment';
 import { PaginatedProcessStats } from '@/models/cf/process';
-import useContext from './useContext';
+import { PaginatedServiceInstances } from '@/models/cf/service';
 
-type ApplicationContextPart = 'application' | 'environment' | 'processes';
+type ApplicationContextPart = 'application' | 'environment' | 'services' | 'processes';
 export interface ApplicationContext {
   application: Ref<CFApplication | undefined>;
   environment: Ref<CFEnvironmentVariables | undefined>;
+  services: Ref<PaginatedServiceInstances | undefined>;
   processes: Ref<PaginatedProcessStats | undefined>;
 
   reload: (part: ApplicationContextPart, ...others: ApplicationContextPart[]) => void;

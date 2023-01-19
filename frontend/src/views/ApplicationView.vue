@@ -4,6 +4,7 @@ import { ApiErrorResponse, compactErrors } from '@/api';
 import applicationsApi from '@/api/application';
 import environmentApi from '@/api/environment';
 import processApi from '@/api/process';
+import serviceApi from '@/api/service';
 import ApiErrorAlert from '@/components/ApiErrorAlert.vue';
 import { provideApplicationContext } from '@/composables/useApplicationContext';
 import useLoadData from '@/composables/useLoadData';
@@ -36,6 +37,20 @@ const {
 } = useLoadData(() => environmentApi.getForApplication(props.guid), loading);
 
 const {
+  data: services,
+  error: servicesError,
+  loadData: loadServices,
+  resetData: resetServices,
+} = useLoadData(async () => {
+  const bindings = await serviceApi.getBindingsForApplication(props.guid);
+  if (bindings.success) {
+    const guids = bindings.data.resources.map((binding) => binding.relationships.service_instance.data.guid);
+    return await serviceApi.getInstances(guids);
+  }
+  return bindings;
+}, loading);
+
+const {
   data: processes,
   error: processesError,
   loadData: loadProcesses,
@@ -46,10 +61,12 @@ const loadAllData = (invalidate: boolean = false) => {
   if (invalidate) {
     resetApplication();
     resetEnvironment();
+    resetServices();
     resetProcesses();
   }
   loadApplication();
   loadEnvironment();
+  loadServices();
   loadProcesses();
 };
 
@@ -70,6 +87,7 @@ onCachedActivated(() => props.guid, loadAllData);
 provideApplicationContext({
   application,
   environment,
+  services,
   processes,
   reload: (part, ...others) => {
     const parts = [part, ...others];
@@ -79,6 +97,9 @@ provideApplicationContext({
     }
     if (parts.includes('environment')) {
       loadEnvironment();
+    }
+    if (parts.includes('services')) {
+      loadServices();
     }
     if (parts.includes('processes')) {
       loadProcesses();
@@ -148,6 +169,10 @@ provideApplicationContext({
           <v-list-item
             title="Environnement"
             :to="{ name: RouteNames.APPLICATION_ENVIRONMENT, params: { guid: application.guid } }">
+          </v-list-item>
+          <v-list-item
+            title="Services"
+            :to="{ name: RouteNames.APPLICATION_SERVICES, params: { guid: application.guid } }">
           </v-list-item>
           <v-list-item
             title="Log Stream"
