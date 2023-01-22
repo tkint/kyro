@@ -6,7 +6,7 @@
     "dev": "node --experimental-specifier-resolution=node --loader ts-node/esm ./src/server.ts",
     "prebuild": "rimraf dist && mkdir dist",
     "build": "tsc",
-    "postbuild": "cpy proto package.json dist/ && cpy .env.production dist/ || true"
+    "postbuild": "cpy package.json proto dist/ && cpy .env.production dist/ || true"
   },
   "dependencies": {
     "body-parser": "^1.20.1",

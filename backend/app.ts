@@ -1,13 +1,13 @@
-import fs from 'fs';
+import bodyParser from 'body-parser';
+import cors from 'cors';
 import dotenv from 'dotenv';
 import express from 'express';
+import fs from 'fs';
 import http from 'http';
-import cors from 'cors';
-import bodyParser from 'body-parser';
-import request from 'request';
 
-import { proxyMiddleware } from './proxy';
-import { loggingMiddleware } from './logging';
+import { getInfos } from './lib/infos';
+import { loggingMiddleware } from './lib/logging';
+import { proxyMiddleware } from './lib/proxy';
 
 const IS_PRODUCTION = process.env.NODE_ENV === 'production';
 
@@ -22,31 +22,7 @@ dotenv.config({
   path: dotenvPath,
 });
 
-type Infos = {
-  apiUrl: string;
-  loginUrl: string;
-  loggingUrl: string;
-  logCacheUrl: string;
-  logStreamUrl: string;
-};
-
-new Promise<Infos>((resolve) => {
-  const apiUrl = process.env.API_URL as string;
-
-  request(apiUrl, { strictSSL: false, json: true }, (err, res) => {
-    if (err) throw err;
-
-    const { links } = res.body;
-
-    resolve({
-      apiUrl: apiUrl,
-      loginUrl: links.login.href,
-      loggingUrl: links.logging.href,
-      logCacheUrl: links.log_cache.href,
-      logStreamUrl: links.log_stream.href,
-    });
-  });
-}).then(({ apiUrl, loginUrl, loggingUrl }) => {
+getInfos().then(({ apiUrl, loginUrl, loggingUrl }) => {
   const app = express();
   const server = http.createServer(app);
 
@@ -59,9 +35,9 @@ new Promise<Infos>((resolve) => {
   loggingMiddleware(server, loggingUrl);
 
   if (IS_PRODUCTION) {
-    const frontendDir = `${__dirname}/frontend/`;
+    const frontendDir = `${__dirname}/public/`;
     app.use(express.static(frontendDir));
-    app.get('/', function (_, res) {
+    app.get('/', (_, res) => {
       res.sendFile(`${frontendDir}index.html`);
     });
   }

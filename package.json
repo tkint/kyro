@@ -2,7 +2,7 @@
   "name": "kyro",
   "scripts": {
     "prebuild": "pnpm -r build && rimraf dist && mkdir dist",
-    "build": "cpy backend/dist/**/* dist && cpy frontend/dist/**/* dist/frontend"
+    "build": "cpy backend/dist/**/* dist && cpy frontend/dist/**/* dist/public"
   },
   "devDependencies": {
     "cash-true": "^0.0.2",
