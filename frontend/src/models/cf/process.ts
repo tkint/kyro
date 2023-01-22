@@ -50,7 +50,7 @@ export interface CFProcessStats {
   isolation_segment?: any;
   details?: any;
   instance_ports: CFProcessStats.Instanceport[];
-  usage: CFProcessStats.Usage;
+  usage?: CFProcessStats.Usage;
 }
 
 export namespace CFProcessStats {

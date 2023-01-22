@@ -8,10 +8,32 @@ import useLoadData from '@/composables/useLoadData';
 import { CFInclude } from '@/models/cf/common';
 import { CFOrganization } from '@/models/cf/organization';
 import { CFSpace } from '@/models/cf/space';
+import { compare, range } from '@/utils/common';
 
-const { data, response, loadData, loading } = useLoadData(() =>
-  applicationApi.getAll({ includes: [CFInclude.SPACE, CFInclude.SPACE_ORGANIZATION], perPage: 500 }),
-);
+const { data, response, loadData, loading } = useLoadData(async () => {
+  const getPage = (page: number) =>
+    applicationApi.getAll({
+      includes: [CFInclude.SPACE, CFInclude.SPACE_ORGANIZATION],
+      page: page,
+      perPage: 100,
+    });
+
+  const firstPage = await getPage(1);
+
+  if (!firstPage.success) return firstPage;
+
+  const { total_pages } = firstPage.data.pagination;
+
+  if (total_pages > 1) {
+    (await Promise.all(range(2, total_pages).map((page) => getPage(page)))).forEach((pageResponse) => {
+      if (pageResponse.success) {
+        firstPage.data.resources.push(...pageResponse.data.resources);
+      }
+    });
+  }
+
+  return firstPage;
+});
 
 onActivated(loadData);
 
@@ -39,15 +61,17 @@ const applications = computed(() => {
 });
 
 const organizationFilter = ref<CFOrganization['guid']>();
-const organizations = computed(() => data.value?.included?.organizations);
+const organizations = computed(() => data.value?.included?.organizations.sort((a, b) => compare(a.name, b.name)));
 
 const spaceFilter = ref<CFSpace['guid']>();
 const spaces = computed(
   () =>
-    data.value?.included?.spaces?.filter((space) => {
-      const orgFilter = organizationFilter.value;
-      return !orgFilter || space?.relationships.organization.data.guid === orgFilter;
-    }) || [],
+    data.value?.included?.spaces
+      ?.filter((space) => {
+        const orgFilter = organizationFilter.value;
+        return !orgFilter || space?.relationships.organization.data.guid === orgFilter;
+      })
+      .sort((a, b) => compare(a.name, b.name)) || [],
 );
 
 watch(

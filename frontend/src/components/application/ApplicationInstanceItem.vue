@@ -16,8 +16,11 @@ const props = defineProps<{
     <td>
       <v-row>
         <v-col>
-          {{ convertMemory(process.usage.mem, MemoryUnit.B).MB.toFixed(2) }} /
-          {{ convertMemory(process.mem_quota, MemoryUnit.B).MB.toFixed(2) }} MB
+          <template v-if="process.usage !== undefined">
+            {{ convertMemory(process.usage?.mem, MemoryUnit.B).MB.toFixed(2) }} /
+            {{ convertMemory(process.mem_quota, MemoryUnit.B).MB.toFixed(2) }} MB
+          </template>
+          <template v-else>--</template>
         </v-col>
       </v-row>
 
@@ -25,7 +28,7 @@ const props = defineProps<{
         <v-col>
           <v-progress-linear
             rounded
-            :model-value="percentage(process.usage.mem, process.mem_quota)"
+            :model-value="percentage(process.usage?.mem ?? 0, process.mem_quota)"
             color="success"></v-progress-linear>
         </v-col>
       </v-row>
@@ -34,8 +37,11 @@ const props = defineProps<{
     <td>
       <v-row>
         <v-col>
-          {{ convertMemory(process.usage.disk, MemoryUnit.B).MB.toFixed(2) }} /
-          {{ convertMemory(process.disk_quota, MemoryUnit.B).MB.toFixed(2) }} MB
+          <template v-if="process.usage !== undefined">
+            {{ convertMemory(process.usage.disk, MemoryUnit.B).MB.toFixed(2) }} /
+            {{ convertMemory(process.disk_quota, MemoryUnit.B).MB.toFixed(2) }} MB
+          </template>
+          <template v-else>--</template>
         </v-col>
       </v-row>
 
@@ -43,7 +49,7 @@ const props = defineProps<{
         <v-col>
           <v-progress-linear
             rounded
-            :model-value="percentage(process.usage.disk, process.disk_quota)"
+            :model-value="percentage(process.usage?.disk ?? 0, process.disk_quota)"
             color="success"></v-progress-linear>
         </v-col>
       </v-row>
@@ -52,8 +58,11 @@ const props = defineProps<{
     <td>
       <v-row>
         <v-col>
-          {{ convertMemory(process.usage.cpu, MemoryUnit.B).MB.toFixed(2) }} /
-          {{ convertMemory(process.fds_quota, MemoryUnit.B).MB.toFixed(2) }} MB
+          <template v-if="process.usage !== undefined">
+            {{ convertMemory(process.usage.cpu, MemoryUnit.B).MB.toFixed(2) }} /
+            {{ convertMemory(process.fds_quota, MemoryUnit.B).MB.toFixed(2) }} MB
+          </template>
+          <template v-else>--</template>
         </v-col>
       </v-row>
 
@@ -61,7 +70,7 @@ const props = defineProps<{
         <v-col>
           <v-progress-linear
             rounded
-            :model-value="percentage(process.usage.cpu, process.fds_quota)"
+            :model-value="percentage(process.usage?.cpu ?? 0, process.fds_quota)"
             color="success"></v-progress-linear>
         </v-col>
       </v-row>
