@@ -2,13 +2,8 @@
   "name": "kyro",
   "scripts": {
     "prebuild": "pnpm -r build && rimraf dist && mkdir dist",
-    "build": "cpy server/dist/**/* dist && cpy frontend/dist/**/* dist/frontend",
-    "serve": "cross-env NODE_ENV=production node dist/server.js"
+    "build": "cpy backend/dist/**/* dist && cpy frontend/dist/**/* dist/frontend"
   },
-  "workspaces": [
-    "frontend",
-    "server"
-  ],
   "devDependencies": {
     "cash-true": "^0.0.2",
     "cpy-cli": "^4.1.0",

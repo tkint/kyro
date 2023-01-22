@@ -1,13 +1,13 @@
-const fs = require('fs');
-const dotenv = require('dotenv');
-const express = require('express');
-const http = require('http');
-const cors = require('cors');
-const bodyParser = require('body-parser');
-const request = require('request');
+import fs from 'fs';
+import dotenv from 'dotenv';
+import express from 'express';
+import http from 'http';
+import cors from 'cors';
+import bodyParser from 'body-parser';
+import request from 'request';
 
-const { proxyMiddleware } = require('./proxy');
-const { loggingMiddleware } = require('./logging');
+import { proxyMiddleware } from './proxy';
+import { loggingMiddleware } from './logging';
 
 const IS_PRODUCTION = process.env.NODE_ENV === 'production';
 
@@ -22,8 +22,16 @@ dotenv.config({
   path: dotenvPath,
 });
 
-new Promise((resolve) => {
-  const apiUrl = process.env.API_URL;
+type Infos = {
+  apiUrl: string;
+  loginUrl: string;
+  loggingUrl: string;
+  logCacheUrl: string;
+  logStreamUrl: string;
+};
+
+new Promise<Infos>((resolve) => {
+  const apiUrl = process.env.API_URL as string;
 
   request(apiUrl, { strictSSL: false, json: true }, (err, res) => {
     if (err) throw err;
@@ -58,7 +66,8 @@ new Promise((resolve) => {
     });
   }
 
-  server.listen(process.env.PORT || 8080, () => {
-    console.log(`Server started on port ${server.address().port}`);
+  const port = process.env.PORT || 8080;
+  server.listen(port, () => {
+    console.log(`Server started on port ${port}`);
   });
 });

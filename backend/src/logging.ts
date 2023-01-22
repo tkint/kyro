@@ -1,21 +1,23 @@
-const url = require('url');
-const WebSocket = require('ws');
-const request = require('request');
-const protobuf = require('protobufjs');
+import { Server } from 'http';
+import protobuf from 'protobufjs';
+import request from 'request';
+import url from 'url';
+import { WebSocket, WebSocketServer } from 'ws';
 
-const loggingMiddleware = (server, loggingUrl) => {
+export const loggingMiddleware = (server: Server, loggingUrl: string) => {
   protobuf.load('proto/envelope.proto', (err, root) => {
+    if (!root) throw Error('Root undefined');
     if (err) throw err;
 
     const Envelope = root.lookupType('events.Envelope');
 
-    const wsServer = new WebSocket.WebSocketServer({ server });
+    const wsServer = new WebSocketServer({ server });
 
     wsServer.on('connection', async (ws, req) => {
-      const reqUrl = url.parse(req.url);
-      const reqSearchParams = new URLSearchParams(reqUrl.search);
-      const [_, resource, guid, action] = reqUrl.pathname.split('/');
-      const authorization = reqSearchParams.get('authorization');
+      const reqUrl = url.parse(req.url ?? '');
+      const reqSearchParams = new URLSearchParams(reqUrl.search ?? {});
+      const [_, __, guid, ___] = (reqUrl.pathname ?? '').split('/');
+      const authorization = reqSearchParams.get('authorization') ?? '';
       const recent = reqSearchParams.get('recent') === 'true';
 
       if (recent) {
@@ -57,14 +59,11 @@ const loggingMiddleware = (server, loggingUrl) => {
         console.log('WS ERROR', event);
       });
       wsLogStream.on('message', (event) => {
+        // @ts-ignore
         const message = Envelope.decode(event);
 
         ws.send(JSON.stringify(message.toJSON()));
       });
     });
   });
-};
-
-module.exports = {
-  loggingMiddleware: loggingMiddleware,
 };

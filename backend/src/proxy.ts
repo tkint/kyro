@@ -1,6 +1,7 @@
-const request = require('request');
+import { RequestHandler } from 'express';
+import request from 'request';
 
-const proxyMiddleware = (url) => {
+export const proxyMiddleware: (url: string) => RequestHandler = (url) => {
   if (!url) {
     throw Error('Proxy URL mandatory');
   }
@@ -48,8 +49,4 @@ const proxyMiddleware = (url) => {
       },
     );
   };
-};
-
-module.exports = {
-  proxyMiddleware,
 };
