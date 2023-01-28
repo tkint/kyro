@@ -1,42 +1,55 @@
 <script setup lang="ts">
-import { computed } from 'vue';
 import { CFEvent, CFEventType } from '@/models/cf/event';
 import { fromEpoch } from '@/utils/date';
+import { computed } from 'vue';
 
 const props = defineProps<{
   event: CFEvent;
 }>();
 
 const formattedData = computed(() => {
-  const { timestamp, eventType } = props.event;
+  const { timestamp, type: eventType } = props.event;
 
-  const data = [`[${timestamp ? fromEpoch(timestamp).format('DD/MM/YYYY HH:mm:ss') : '--/--/---- --:--:--'}]`];
+  const data = [
+    `[${timestamp ? fromEpoch(parseInt(timestamp)).format('DD/MM/YYYY HH:mm:ss') : '--/--/---- --:--:--'}]`,
+  ];
 
   switch (eventType) {
-    case CFEventType.ContainerMetric:
-      const { instanceIndex, cpuPercentage, diskBytes, diskBytesQuota, memoryBytes, memoryBytesQuota } =
-        props.event.containerMetric;
+    case CFEventType.Log: {
+      const { payload, type } = props.event.log;
+
+      const textClass = ['font-weight-bold', type === CFEvent.Log.Type.ERR && 'text-error'].join(' ');
+
+      data.push(`<span class="${textClass}">${type} ${atob(payload)}</span>`);
+      break;
+    }
+
+    case CFEventType.Gauge: {
+      const { metrics } = props.event.gauge;
 
       data.push(
-        `#${instanceIndex} |`,
-        `CPU ${cpuPercentage.toFixed(2)}% |`,
-        `MEM ${(memoryBytes / 1000000).toFixed(2)} MB - ${
-          memoryBytesQuota && `${((memoryBytes / memoryBytesQuota) * 100).toFixed(2)}%`
-        } |`,
-        `DISK ${(diskBytes / 1000000).toFixed(2)} MB - ${
-          diskBytesQuota && `${((diskBytes / diskBytesQuota) * 100).toFixed(2)}%`
-        } |`,
-      );
-      break;
-    case CFEventType.LogMessage:
-      const { message, messageType } = props.event.logMessage;
-
-      const textClass = ['font-weight-bold', messageType === CFEvent.LogMessage.MessageType.ERR && 'text-error'].join(
-        ' ',
+        ...Object.entries(metrics).map(([key, value]) => {
+          return `${key}=${value.value} ${value.unit}`;
+        }),
       );
 
-      data.push(`<span class="${textClass}">${messageType} ${atob(message)}</span>`);
       break;
+    }
+
+    case CFEventType.Timer: {
+      const { name, start, stop } = props.event.timer;
+
+      const startTime = fromEpoch(parseInt(start));
+      const stopTime = fromEpoch(parseInt(stop));
+
+      data.push(
+        `${name} |`,
+        `START ${startTime.format('DD/MM/YYYY HH:mm:ss')} |`,
+        `STOP ${stopTime.format('DD/MM/YYYY HH:mm:ss')} |`,
+        `DURATION ${stopTime.diff(startTime, 'milliseconds')}ms |`,
+      );
+      break;
+    }
   }
 
   return data.join(' ');

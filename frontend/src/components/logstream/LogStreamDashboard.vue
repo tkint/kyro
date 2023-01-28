@@ -1,11 +1,13 @@
 <script setup lang="ts">
-import { computed, reactive, ref } from 'vue';
 import { appInfos } from '@/api';
 import LogStreamItem from '@/components/logstream/LogStreamItem.vue';
 import useApplicationContext from '@/composables/useApplicationContext';
 import { CFEvent, CFEventType } from '@/models/cf/event';
 import { useAuthStore } from '@/stores/auth';
 import { absoluteOrRelativeURL } from '@/utils/url';
+import { computed, reactive, ref } from 'vue';
+
+const MAX_EVENTS = 1000;
 
 const authStore = useAuthStore();
 const { application } = useApplicationContext();
@@ -18,11 +20,11 @@ const deleteLogs = () => {
   events.splice(0, events.length);
 };
 
-const init = async () => {
+const init = async (options: { forceRenew: boolean } = { forceRenew: false }) => {
   if (application.value) {
     const { wssUrl } = appInfos;
 
-    const authorization = await authStore.getAuthorization();
+    const authorization = await authStore.getAuthorization({ forceRenew: options.forceRenew });
 
     const logsUrl = absoluteOrRelativeURL(wssUrl);
 
@@ -52,12 +54,15 @@ const init = async () => {
 
     ws.addEventListener('close', () => {
       connected.value = false;
+      // init({ forceRenew: true });
     });
 
-    ws.addEventListener('message', (event) => {
-      const cfEvent: CFEvent = JSON.parse(event.data);
-
-      events.push(cfEvent);
+    ws.addEventListener('message', (message) => {
+      const event: CFEvent = JSON.parse(message.data);
+      while (events.length > MAX_EVENTS - 1) {
+        events.shift();
+      }
+      events.push(event);
     });
   }
 };
@@ -65,10 +70,10 @@ init();
 
 const filters = reactive<{
   types: CFEventType[];
-  messageTypes: CFEvent.LogMessage.MessageType[];
+  messageTypes: CFEvent.Log.Type[];
 }>({
   types: [],
-  messageTypes: Object.values(CFEvent.LogMessage.MessageType),
+  messageTypes: Object.values(CFEvent.Log.Type),
 });
 const filteredEvents = computed(() =>
   events.filter((event) => {
@@ -76,10 +81,7 @@ const filteredEvents = computed(() =>
 
     if (types.length === 0 && messageTypes.length === 0) return true;
 
-    return (
-      types.includes(event.eventType) ||
-      (event.eventType === CFEventType.LogMessage && messageTypes.includes(event.logMessage.messageType))
-    );
+    return types.includes(event.type) || (event.type === CFEventType.Log && messageTypes.includes(event.log.type));
   }),
 );
 </script>
@@ -93,31 +95,33 @@ const filteredEvents = computed(() =>
           <v-icon>mdi-delete-outline</v-icon>
           <v-tooltip activator="parent" location="bottom">Delete logs</v-tooltip>
         </v-btn>
+
+        {{ events.length }} / {{ MAX_EVENTS }}
       </v-toolbar-title>
 
       <v-spacer></v-spacer>
 
       <v-chip-group v-model="filters.messageTypes" column multiple>
         <v-chip
-          v-for="messageType in Object.values(CFEvent.LogMessage.MessageType)"
+          v-for="messageType in Object.values(CFEvent.Log.Type)"
           :key="`message-type-${messageType}`"
           filter
           outlined
           :value="messageType">
-          {{ CFEventType.LogMessage }} {{ messageType }}
+          {{ CFEventType.Log }} {{ messageType }}
         </v-chip>
       </v-chip-group>
 
-      <v-chip-group v-model="filters.types" column multiple>
+      <!-- <v-chip-group v-model="filters.types" column multiple>
         <v-chip
-          v-for="eventType in Object.values(CFEventType).filter((type) => type !== CFEventType.LogMessage)"
+          v-for="eventType in Object.values(CFEventType).filter((type) => type !== CFEventType.Log)"
           :key="`event-type-${eventType}`"
           filter
           outlined
           :value="eventType">
           {{ eventType }}
         </v-chip>
-      </v-chip-group>
+      </v-chip-group> -->
 
       <v-badge :color="connected ? 'success' : 'error'" class="me-2" inline>
         <v-tooltip activator="parent" location="bottom">{{ connected ? 'Connecté' : 'Connexion en erreur' }}</v-tooltip>

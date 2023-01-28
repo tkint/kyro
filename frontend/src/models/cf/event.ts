@@ -1,85 +1,76 @@
 export enum CFEventType {
-  HttpStartStop = 'HttpStartStop',
-  LogMessage = 'LogMessage',
-  ValueMetric = 'ValueMetric',
-  CounterEvent = 'CounterEvent',
-  Error = 'Error',
-  ContainerMetric = 'ContainerMetric',
+  Log = 'Log',
+  Gauge = 'Gauge',
+  Timer = 'Timer',
+  None = 'None',
 }
 
 export type CFEvent = {
-  origin: string;
-  timestamp?: number;
-  deployment?: string;
-  job?: string;
-  index?: string;
-  ip?: string;
-  tags?: Record<string, string>;
+  timestamp: string;
+  source_id: string;
+  instance_id: string;
+  deprecated_tags: Record<string, string>;
+  tags: Record<string, string>;
 } & (
   | {
-      eventType: CFEventType.LogMessage;
-      logMessage: CFEvent.LogMessage;
+      type: CFEventType.Log;
+      log: CFEvent.Log;
     }
   | {
-      eventType: CFEventType.ValueMetric;
-      valueMetric: CFEvent.ValueMetric;
+      type: CFEventType.Gauge;
+      gauge: CFEvent.Gauge;
     }
   | {
-      eventType: CFEventType.CounterEvent;
-      counterEvent: CFEvent.CounterEvent;
+      type: CFEventType.Timer;
+      timer: CFEvent.Timer;
     }
   | {
-      eventType: CFEventType.Error;
-      error: CFEvent.Error;
-    }
-  | {
-      eventType: CFEventType.ContainerMetric;
-      containerMetric: CFEvent.ContainerMetric;
+      type: CFEventType.None;
     }
 );
 
 export namespace CFEvent {
-  export interface LogMessage {
-    message: string;
-    messageType: LogMessage.MessageType;
-    timestamp: number;
-    appId?: string;
-    sourceType?: string;
-    sourceInstance?: string;
+  export interface Log {
+    payload: string;
+    type: Log.Type;
   }
 
-  export namespace LogMessage {
-    export enum MessageType {
+  export namespace Log {
+    export enum Type {
       OUT = 'OUT',
       ERR = 'ERR',
     }
   }
 
-  export interface ValueMetric {
+  export interface Timer {
     name: string;
-    value: number;
-    unit: string;
+    start: string;
+    stop: string;
   }
 
-  export interface CounterEvent {
-    name: string;
-    delta: number;
-    total?: number;
+  export interface Gauge {
+    metrics: Gauge.Metrics;
   }
 
-  export interface Error {
-    source: string;
-    code: number;
-    message: string;
-  }
+  export namespace Gauge {
+    export type Metrics = {
+      spike_end?: Metric;
+      spike_start?: Metric;
+      absolute_entitlement?: Metric;
+      absolute_usage?: Metric;
+      container_age?: Metric;
+      disk?: Metric;
+      memory?: Metric;
+      cpu?: Metric;
+      disk_quota?: Metric;
+      memory_quota?: Metric;
+      log_rate_limit?: Metric;
+      log_rate?: Metric;
+    };
 
-  export interface ContainerMetric {
-    applicationId: string;
-    instanceIndex: number;
-    cpuPercentage: number;
-    memoryBytes: number;
-    diskBytes: number;
-    memoryBytesQuota?: number;
-    diskBytesQuota?: number;
+    export interface Metric {
+      unit: string;
+      value: number;
+    }
   }
 }

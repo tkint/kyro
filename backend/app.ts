@@ -22,7 +22,7 @@ dotenv.config({
   path: dotenvPath,
 });
 
-getInfos().then(({ apiUrl, loginUrl, loggingUrl }) => {
+getInfos().then(({ apiUrl, loginUrl, logCacheUrl }) => {
   const app = express();
   const server = http.createServer(app);
 
@@ -32,7 +32,7 @@ getInfos().then(({ apiUrl, loginUrl, loggingUrl }) => {
 
   app.use('/login', bodyParser.text({ type: 'application/x-www-form-urlencoded' }), proxyMiddleware(loginUrl));
 
-  loggingMiddleware(server, loggingUrl);
+  loggingMiddleware(server, logCacheUrl);
 
   if (IS_PRODUCTION) {
     const frontendDir = `${__dirname}/public/`;

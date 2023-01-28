@@ -62,10 +62,10 @@ export const useAuthStore = defineStore('auth', {
       }
     },
 
-    async getToken(): Promise<AuthToken | undefined> {
+    async getToken(options: { forceRenew: boolean } = { forceRenew: false }): Promise<AuthToken | undefined> {
       if (this.authToken) {
         const expirationDate = dayjs(this.authToken.lastDemand).add(this.authToken.expires_in, 'seconds');
-        if (dayjs().isAfter(expirationDate)) {
+        if (options?.forceRenew || dayjs().isAfter(expirationDate)) {
           const response = await authApi.renewToken(this.authToken);
           if (response.success) {
             this.authToken = { ...response.data, lastDemand: dayjs() };
@@ -77,8 +77,8 @@ export const useAuthStore = defineStore('auth', {
       return this.authToken;
     },
 
-    async getAuthorization(): Promise<string | undefined> {
-      const token = await this.getToken();
+    async getAuthorization(options: { forceRenew: boolean } = { forceRenew: false }): Promise<string | undefined> {
+      const token = await this.getToken(options);
       return token && `${capitalize(token.token_type)} ${token.access_token}`;
     },
   },

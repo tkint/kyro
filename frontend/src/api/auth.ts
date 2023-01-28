@@ -5,8 +5,8 @@ export default {
   getAuthToken: (options: { username: string; password: string }) => {
     const formData = new URLSearchParams();
     formData.append('grant_type', 'password');
-    formData.append('password', options.password);
     formData.append('username', options.username);
+    formData.append('password', options.password);
 
     return handleApiCall<AuthToken>({
       path: '/oauth/token',
