@@ -6,7 +6,7 @@
     "dev": "node --experimental-specifier-resolution=node --loader ts-node/esm ./app.ts",
     "prebuild": "rimraf dist && mkdir dist",
     "build": "tsc",
-    "postbuild": "cpy package.json dist/ && cpy .env.production dist/ || true"
+    "postbuild": "cpy \"package.json\" dist/ && cpy \".env.production\" dist/ || true"
   },
   "dependencies": {
     "axios": "^1.2.4",
