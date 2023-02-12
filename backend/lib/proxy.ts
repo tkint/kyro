@@ -1,12 +1,14 @@
+import axios, { AxiosError } from 'axios';
 import { RequestHandler } from 'express';
-import request from 'request';
+import { insecureHttpsAgent } from './agent';
 
 export const proxyMiddleware: (url: string) => RequestHandler = (url) => {
   if (!url) {
     throw Error('Proxy URL mandatory');
   }
   console.log(`Mounted proxy for ${url}`);
-  return (req, res) => {
+
+  return async (req, res) => {
     const headers = req.headers;
     const proxyHeaders = {
       authorization: headers['authorization'],
@@ -35,18 +37,26 @@ export const proxyMiddleware: (url: string) => RequestHandler = (url) => {
       }
     }
 
-    request(
-      proxyUrlStr,
-      { strictSSL: false, method: req.method, body: proxyBody, headers: proxyHeaders, json: isJson },
-      (err, proxyRes, proxyBody) => {
-        if (err) {
-          console.log(err);
-          res.status(500).send(err);
-        } else {
-          res.set(proxyRes.headers);
-          res.status(proxyRes.statusCode).send(proxyBody);
-        }
-      },
-    );
+    try {
+      const response = await axios.request({
+        url: proxyUrlStr,
+        httpsAgent: insecureHttpsAgent,
+        method: req.method,
+        data: proxyBody,
+        headers: proxyHeaders,
+        responseType: isJson ? 'json' : 'text',
+        proxy: false,
+      });
+
+      res.set(response.headers);
+      res.status(response.status).send(response.data);
+    } catch (err) {
+      if (err instanceof AxiosError) {
+        const { response } = err;
+        res.status(response?.status ?? 500).send(response?.data ?? err.message);
+      } else {
+        res.status(500).send(err);
+      }
+    }
   };
 };
