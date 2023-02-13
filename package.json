@@ -5,9 +5,8 @@
     "build": "cpy \"backend/dist/**/*.*\" dist && cpy \"frontend/dist/**/*.*\" dist/public"
   },
   "devDependencies": {
-    "cash-true": "^0.0.2",
-    "cpy-cli": "^4.1.0",
+    "cpy-cli": "^4.2.0",
     "cross-env": "^7.0.3",
-    "rimraf": "^3.0.2"
+    "rimraf": "^4.1.2"
   }
 }
