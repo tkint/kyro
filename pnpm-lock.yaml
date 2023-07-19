@@ -47,6 +47,7 @@ importers:
     specifiers:
       '@mdi/font': ^7.1.96
       '@trivago/prettier-plugin-sort-imports': ^4.0.0
+      '@types/lodash': ^4.14.191
       '@types/node': ^18.13.0
       '@vitejs/plugin-vue': ^4.0.0
       '@vue/compiler-sfc': ^3.2.47
@@ -55,6 +56,7 @@ importers:
       eslint-plugin-prettier: ^4.2.1
       eslint-plugin-vue: ^9.9.0
       jose: ^4.11.4
+      lodash: ^4.17.21
       pinia: 2.0.30
       pinia-plugin-persistedstate: ^3.0.2
       prettier: ^2.8.4
@@ -69,6 +71,7 @@ importers:
       '@mdi/font': 7.1.96
       dayjs: 1.11.7
       jose: 4.11.4
+      lodash: 4.17.21
       pinia: 2.0.30_hmuptsblhheur2tugfgucj7gc4
       pinia-plugin-persistedstate: 3.0.2_pinia@2.0.30
       vue: 3.2.47
@@ -77,6 +80,7 @@ importers:
       zod: 3.20.6
     devDependencies:
       '@trivago/prettier-plugin-sort-imports': 4.0.0_ht5m4fjxbv43inzcw5hdarafmm
+      '@types/lodash': 4.14.191
       '@types/node': 18.13.0
       '@vitejs/plugin-vue': 4.0.0_vite@4.1.1+vue@3.2.47
       '@vue/compiler-sfc': 3.2.47
@@ -712,6 +716,10 @@ packages:
       '@types/express-serve-static-core': 4.17.33
       '@types/qs': 6.9.7
       '@types/serve-static': 1.15.0
+    dev: true
+
+  /@types/lodash/4.14.191:
+    resolution: {integrity: sha512-BdZ5BCCvho3EIXw6wUCXHe7rS53AIDPLE+JzwgT+OsJk53oBfbSmZZ7CX4VaRoN78N+TJpFi9QPlfIVNmJYWxQ==}
     dev: true
 
   /@types/mime/3.0.1:
@@ -1991,7 +1999,6 @@ packages:
 
   /lodash/4.17.21:
     resolution: {integrity: sha512-v2kDEe57lecTulaDIuNTPy3Ry4gLGJ6Z1O3vE1krgXZNrsQ+LFTGHVxVjcXPs17LhbZVGedAJv8XZ1tvj5FvSg==}
-    dev: true
 
   /lru-cache/5.1.1:
     resolution: {integrity: sha512-KpNARQA3Iwv+jTA0utUVVbrh+Jlrr1Fv0e56GGzAFOXN7dk/FviaDW8LHmK52DlcH4WP2n6gI8vN1aesBFgo9w==}

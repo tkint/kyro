@@ -1,19 +1,12 @@
 <script setup lang="ts">
 import ApiErrorAlert from '@/components/ApiErrorAlert.vue';
 import OrganizationItem from '@/components/organization/OrganizationItem.vue';
-import useFilterData from '@/composables/useFilterData';
 import useOrganizations from '@/composables/useOrganizations';
 import { onActivated } from 'vue';
 
-const { loading, data, error, fetchData } = useOrganizations();
+const { loading, filters, filteredData, error, fetchData } = useOrganizations();
 
 onActivated(fetchData);
-
-const { filters, data: filteredOrganizations } = useFilterData((filters, { includesText }) => {
-  return data.value?.resources.filter((organization) => {
-    return !filters.text || includesText(organization.name);
-  });
-});
 </script>
 
 <template>
@@ -44,7 +37,7 @@ const { filters, data: filteredOrganizations } = useFilterData((filters, { inclu
       </v-row>
 
       <v-row>
-        <v-col cols="3" v-for="organization in filteredOrganizations" :key="`organization-${organization.guid}`">
+        <v-col cols="3" v-for="organization in filteredData" :key="`organization-${organization.guid}`">
           <organization-item :organization="organization"></organization-item>
         </v-col>
       </v-row>

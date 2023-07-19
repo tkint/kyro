@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { ref } from 'vue';
 import TheDrawer from '@/components/layout/TheDrawer.vue';
 import TheHeader from '@/components/layout/TheHeader.vue';
 import { useAuthStore } from '@/stores/auth';
 import LoginView from '@/views/LoginView.vue';
+import { ref } from 'vue';
 
 const authStore = useAuthStore();
 

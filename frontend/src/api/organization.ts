@@ -1,11 +1,16 @@
-import { handleApiCall } from '@/api';
+import { handleApiCall, queryParams } from '@/api';
 import { CFOrganization, PaginatedOrganizations } from '@/models/cf/organization';
 import { useAuthStore } from '@/stores/auth';
 
 export default {
-  getAll: async () => {
+  getAll: async (options?: Partial<{ names: string[]; page: number; perPage: number }>) => {
     return handleApiCall<PaginatedOrganizations>({
       path: '/v3/organizations',
+      query: queryParams({
+        names: options?.names?.join(','),
+        page: options?.page,
+        per_page: options?.perPage,
+      }),
       authorization: useAuthStore().getAuthorization,
     });
   },

@@ -89,6 +89,18 @@ export const handleApiCall = async <TData, TError = ApiErrorResponse>(
   }
 };
 
+export const queryParams = (params: Record<string, any>): Record<string, any> => {
+  const query: Record<string, any> = {};
+
+  Object.entries(params).forEach(([key, value]) => {
+    if (value !== undefined && value !== '') {
+      query[key] = value;
+    }
+  });
+
+  return query;
+};
+
 export const compactErrors = (...errors: (ApiErrorResponse | undefined | false)[]): ApiErrorResponse | undefined => {
   const flattenErrors = distinct(arrayOfNotFalsy(...errors).flatMap((error) => error.errors));
   return flattenErrors.length > 0 ? { errors: flattenErrors } : undefined;

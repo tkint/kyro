@@ -11,6 +11,7 @@
     "@mdi/font": "^7.1.96",
     "dayjs": "^1.11.7",
     "jose": "^4.11.4",
+    "lodash": "^4.17.21",
     "pinia": "2.0.30",
     "pinia-plugin-persistedstate": "^3.0.2",
     "vue": "^3.2.47",
@@ -20,6 +21,7 @@
   },
   "devDependencies": {
     "@trivago/prettier-plugin-sort-imports": "^4.0.0",
+    "@types/lodash": "^4.14.191",
     "@types/node": "^18.13.0",
     "@vitejs/plugin-vue": "^4.0.0",
     "@vue/compiler-sfc": "^3.2.47",

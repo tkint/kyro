@@ -1,5 +1,5 @@
-import { Dayjs } from 'dayjs';
 import { HttpMethod } from '@/models/common';
+import { Dayjs } from 'dayjs';
 
 export interface CFLink {
   href: string;

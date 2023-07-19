@@ -1,4 +1,4 @@
-import { handleApiCall, TODO } from '@/api';
+import { handleApiCall, queryParams, TODO } from '@/api';
 import { CFApplication, PaginatedApplications } from '@/models/cf/application';
 import { CFInclude } from '@/models/cf/common';
 import { useAuthStore } from '@/stores/auth';
@@ -9,11 +9,11 @@ export default {
   ) => {
     return handleApiCall<PaginatedApplications>({
       path: '/v3/apps',
-      query: {
-        ...(options?.page && { page: options.page }),
-        ...(options?.perPage && { per_page: options.perPage }),
-        ...(options?.includes && { include: options.includes }),
-      },
+      query: queryParams({
+        include: options?.includes,
+        page: options?.page,
+        per_page: options?.perPage,
+      }),
       authorization: useAuthStore().getAuthorization,
     });
   },
