@@ -2,9 +2,12 @@
 import ApiErrorAlert from '@/components/ApiErrorAlert.vue';
 import OrganizationItem from '@/components/organization/OrganizationItem.vue';
 import useOrganizations from '@/composables/useOrganizations';
-import { onActivated } from 'vue';
+import usePagination from '@/composables/usePagination';
+import { onActivated, ref } from 'vue';
 
 const { loading, filters, filteredData, error, fetchData } = useOrganizations();
+
+const { data: paginatedData, pagination } = usePagination(filteredData, { perPage: 20 });
 
 onActivated(fetchData);
 </script>
@@ -37,8 +40,14 @@ onActivated(fetchData);
       </v-row>
 
       <v-row>
-        <v-col cols="3" v-for="organization in filteredData" :key="`organization-${organization.guid}`">
+        <v-col cols="3" v-for="organization in paginatedData" :key="`organization-${organization.guid}`">
           <organization-item :organization="organization"></organization-item>
+        </v-col>
+      </v-row>
+
+      <v-row>
+        <v-col>
+          <v-pagination v-model="pagination.page" :length="pagination.pages"></v-pagination>
         </v-col>
       </v-row>
     </template>

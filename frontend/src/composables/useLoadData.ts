@@ -1,8 +1,11 @@
 import { ApiErrorResponse } from '@/api';
+import { CFPaginated } from '@/models/cf/common';
+import { distinct } from '@/utils/array';
+import { range } from '@/utils/common';
 import { Result } from '@/utils/result';
 import { computed, readonly, ref } from 'vue';
 
-export default <TData, TError = ApiErrorResponse>(
+export const useLoadData = <TData, TError = ApiErrorResponse>(
   loader: () => Promise<Result<TData, TError>>,
   loading = ref(false),
 ) => {
@@ -25,6 +28,36 @@ export default <TData, TError = ApiErrorResponse>(
     },
   };
 };
+
+export const useLoadPaginatedData = <TData extends CFPaginated<any>, TError = ApiErrorResponse>(
+  loader: (page: number) => Promise<Result<TData, TError>>,
+) =>
+  useLoadData(async () => {
+    const result = await loader(1);
+
+    if (!result.success) return result;
+
+    const { total_pages } = result.data.pagination;
+    const included = result.data.included ?? {};
+
+    if (total_pages > 1) {
+      (await Promise.all(range(2, total_pages).map((page) => loader(page)))).forEach((pageResponse) => {
+        if (pageResponse.success) {
+          result.data.resources.push(...pageResponse.data.resources);
+          Object.entries(pageResponse.data.included ?? {}).forEach(([key, values]) => {
+            included[key] = distinct([...included[key], ...values], (item) => item.guid);
+          });
+        }
+      });
+    }
+
+    return {
+      ...result,
+      included,
+    };
+  });
+
+export default useLoadData;
 
 // export const useLoadPaginatedData = <TData extends CFPaginated<any>, TError = ApiErrorResponse>(
 //   loader: (options: { page: number; perPage: number }) => Promise<ApiResponse<TData, TError>>,

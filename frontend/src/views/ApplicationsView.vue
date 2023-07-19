@@ -1,39 +1,23 @@
 <script setup lang="ts">
-import { computed, onActivated, ref, watch } from 'vue';
 import applicationApi from '@/api/application';
 import ApiErrorAlert from '@/components/ApiErrorAlert.vue';
 import ApplicationItem from '@/components/application/ApplicationItem.vue';
 import useFilterData from '@/composables/useFilterData';
-import useLoadData from '@/composables/useLoadData';
+import { useLoadPaginatedData } from '@/composables/useLoadData';
+import usePagination from '@/composables/usePagination';
 import { CFInclude } from '@/models/cf/common';
 import { CFOrganization } from '@/models/cf/organization';
 import { CFSpace } from '@/models/cf/space';
-import { compare, range } from '@/utils/common';
+import { compare } from '@/utils/common';
+import { computed, onActivated, ref, watch } from 'vue';
 
-const { data, response, loadData, loading } = useLoadData(async () => {
-  const getPage = (page: number) =>
-    applicationApi.getAll({
-      includes: [CFInclude.SPACE, CFInclude.SPACE_ORGANIZATION],
-      page: page,
-      perPage: 100,
-    });
-
-  const firstPage = await getPage(1);
-
-  if (!firstPage.success) return firstPage;
-
-  const { total_pages } = firstPage.data.pagination;
-
-  if (total_pages > 1) {
-    (await Promise.all(range(2, total_pages).map((page) => getPage(page)))).forEach((pageResponse) => {
-      if (pageResponse.success) {
-        firstPage.data.resources.push(...pageResponse.data.resources);
-      }
-    });
-  }
-
-  return firstPage;
-});
+const { data, response, loadData, loading } = useLoadPaginatedData((page: number) =>
+  applicationApi.getAll({
+    includes: [CFInclude.SPACE, CFInclude.SPACE_ORGANIZATION],
+    page: page,
+    perPage: 20,
+  }),
+);
 
 onActivated(loadData);
 
@@ -64,15 +48,36 @@ const organizationFilter = ref<CFOrganization['guid']>();
 const organizations = computed(() => data.value?.included?.organizations.sort((a, b) => compare(a.name, b.name)));
 
 const spaceFilter = ref<CFSpace['guid']>();
-const spaces = computed(
-  () =>
-    data.value?.included?.spaces
-      ?.filter((space) => {
-        const orgFilter = organizationFilter.value;
-        return !orgFilter || space?.relationships.organization.data.guid === orgFilter;
+const spaces = computed(() => {
+  if (!data.value?.included?.spaces) {
+    return [];
+  }
+
+  const filteredSpaces = data.value.included.spaces?.filter((space) => {
+    const orgFilter = organizationFilter.value;
+    return !orgFilter || space.relationships.organization.data.guid === orgFilter;
+  });
+
+  return (
+    filteredSpaces
+      .map((space) => {
+        let displayName: string;
+
+        if (filteredSpaces.filter((s) => s.name === space.name).length > 1) {
+          const organization = organizations.value?.find(
+            (org) => org.guid === space.relationships.organization.data.guid,
+          );
+
+          displayName = `${space.name} (${organization?.name ?? '--'})`;
+        } else {
+          displayName = space.name;
+        }
+
+        return { ...space, displayName };
       })
-      .sort((a, b) => compare(a.name, b.name)) || [],
-);
+      .sort((a, b) => compare(a.displayName, b.displayName)) || []
+  );
+});
 
 watch(
   organizationFilter,
@@ -94,6 +99,8 @@ const { filters, data: filteredApplications } = useFilterData((filters, { includ
     );
   });
 });
+
+const { data: paginatedApplications, pagination } = usePagination(filteredApplications, { perPage: 20 });
 </script>
 
 <template>
@@ -125,7 +132,7 @@ const { filters, data: filteredApplications } = useFilterData((filters, { includ
               density="compact"
               v-model="spaceFilter"
               :items="spaces"
-              item-title="name"
+              item-title="displayName"
               item-value="guid"
               single-line
               clearable>
@@ -146,8 +153,14 @@ const { filters, data: filteredApplications } = useFilterData((filters, { includ
         </v-row>
 
         <v-row>
-          <v-col cols="3" v-for="application in filteredApplications" :key="`application-${application.guid}`">
+          <v-col cols="3" v-for="application in paginatedApplications" :key="`application-${application.guid}`">
             <application-item :application="application"></application-item>
+          </v-col>
+        </v-row>
+
+        <v-row>
+          <v-col>
+            <v-pagination v-model="pagination.page" :length="pagination.pages"></v-pagination>
           </v-col>
         </v-row>
       </template>
