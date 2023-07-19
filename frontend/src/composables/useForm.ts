@@ -12,7 +12,7 @@ type TypedZodRawShape<TObject> = Record<
 export const useForm = <TObject extends object>(
   shape: TypedZodRawShape<TObject>,
   initialValue: TObject
-) => useInferedForm(shape, initialValue);
+) => useInferedForm(shape, initialValue as any);
 
 export const useInferedForm = <
   TShape extends z.ZodRawShape,
