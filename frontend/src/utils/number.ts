@@ -27,37 +27,4 @@ export const convertMemory = (value: number, fromUnit: MemoryUnit): Record<Memor
       return [unit, value];
     }),
   ) as Record<MemoryUnit, number>;
-
-  let B: number;
-
-  switch (fromUnit) {
-    case 'B':
-      B = value;
-      break;
-    case 'KB':
-      B = value * 1000;
-      break;
-    case 'MB':
-      B = value * 1000000;
-      break;
-    case 'GB':
-      B = value * 1000000000;
-      break;
-    case 'TB':
-      B = value * 1000000000000;
-      break;
-  }
-
-  const KB = B / 1000;
-  const MB = KB / 1000;
-  const GB = MB / 1000;
-  const TB = GB / 1000;
-
-  return {
-    B,
-    KB,
-    MB,
-    GB,
-    TB,
-  };
 };

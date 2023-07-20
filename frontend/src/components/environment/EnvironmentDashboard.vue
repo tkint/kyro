@@ -1,15 +1,36 @@
 <script setup lang="ts">
-import { ref, unref } from 'vue';
 import environmentApi from '@/api/environment';
 import EnvironmentVariableForm from '@/components/environment/EnvironmentVariableForm.vue';
 import useApplicationContext from '@/composables/useApplicationContext';
 import useFilterData from '@/composables/useFilterData';
+import useLoadData from '@/composables/useLoadData';
 import { EnvironmentVariableInput } from '@/models/environment';
+import { computed, ref, unref, watch } from 'vue';
 
-const { application, environment, reload } = useApplicationContext();
+const context = useApplicationContext();
+const application = computed(() => context.application.value);
+
+const { data, error, loadData, resetData } = useLoadData(
+  () => environmentApi.getForApplication(context.guid.value),
+  context.loading,
+);
+loadData();
+
+context.on('reload', () => {
+  loadData();
+});
+context.on('reset', () => {
+  resetData();
+});
+
+watch(error, (newValue) => {
+  if (newValue) {
+    context.errors.value.push(newValue);
+  }
+});
 
 const { filters, data: environmentVariables } = useFilterData((filters, { includesText }) => {
-  const variables = unref(environment)?.environment_variables;
+  const variables = unref(data)?.environment_variables;
   return variables
     ? Object.entries(variables).filter(([key, value]) => {
         return !filters.text || includesText(key, value);
@@ -32,7 +53,7 @@ const onVariableFormSubmit = async (newValue: EnvironmentVariableInput) => {
   if (appGuid) {
     await environmentApi.setVariableForApplication(appGuid, newValue);
     variableFormDialog.value = false;
-    reload('environment');
+    loadData();
   }
 };
 
@@ -42,13 +63,13 @@ const onVariableDeleteSubmit = async () => {
   if (appGuid && deletingVariableKey.value) {
     await environmentApi.unsetVariableForApplication(appGuid, deletingVariableKey.value);
     deletingVariableKey.value = undefined;
-    reload('environment');
+    loadData();
   }
 };
 </script>
 
 <template>
-  <v-row class="flex-column" v-if="environment">
+  <v-row class="flex-column" v-if="data">
     <v-dialog v-model="variableFormDialog" width="500">
       <environment-variable-form :initial-input="editingVariable" @submit="onVariableFormSubmit">
       </environment-variable-form>
@@ -119,7 +140,7 @@ const onVariableDeleteSubmit = async () => {
         </v-toolbar>
 
         <v-card-text style="white-space: pre; overflow-x: auto">
-          {{ environment.system_env_json }}
+          {{ data.system_env_json }}
         </v-card-text>
       </v-card>
     </v-col>
@@ -131,7 +152,7 @@ const onVariableDeleteSubmit = async () => {
         </v-toolbar>
 
         <v-card-text style="white-space: pre; overflow-x: auto">
-          {{ environment.application_env_json }}
+          {{ data.application_env_json }}
         </v-card-text>
       </v-card>
     </v-col>
@@ -143,7 +164,7 @@ const onVariableDeleteSubmit = async () => {
         </v-toolbar>
 
         <v-card-text style="white-space: pre; overflow-x: auto">
-          {{ environment.staging_env_json }}
+          {{ data.staging_env_json }}
         </v-card-text>
       </v-card>
     </v-col>
@@ -155,7 +176,7 @@ const onVariableDeleteSubmit = async () => {
         </v-toolbar>
 
         <v-card-text style="white-space: pre; overflow-x: auto">
-          {{ environment.running_env_json }}
+          {{ data.running_env_json }}
         </v-card-text>
       </v-card>
     </v-col>

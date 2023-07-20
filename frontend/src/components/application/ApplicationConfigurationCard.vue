@@ -12,14 +12,14 @@ const props = defineProps<{
 
     <v-card-text>
       <v-row>
-        <v-col>Stack</v-col>
-        <v-col>{{ application.lifecycle.data.stack }}</v-col>
-      </v-row>
-
-      <v-row>
-        <v-col>Buildpacks</v-col>
         <v-col>
-          {{ application.lifecycle.data.buildpacks.join(', ') }}
+          <div>Stack</div>
+          <div>{{ application.lifecycle.data.stack }}</div>
+        </v-col>
+
+        <v-col>
+          <div>Buildpacks</div>
+          <div>{{ application.lifecycle.data.buildpacks.join(', ') }}</div>
         </v-col>
       </v-row>
     </v-card-text>

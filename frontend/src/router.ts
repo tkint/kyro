@@ -5,6 +5,7 @@ export enum RouteNames {
   HOME = 'HOME',
   APPLICATION = 'APPLICATION',
   APPLICATION_ENVIRONMENT = 'APPLICATION_ENVIRONMENT',
+  APPLICATION_ROUTES = 'APPLICATION_ROUTES',
   APPLICATION_SERVICES = 'APPLICATION_SERVICES',
   APPLICATION_LOG_STREAM = 'APPLICATION_LOG_STREAM',
   APPLICATIONS = 'APPLICATIONS',
@@ -40,6 +41,11 @@ const router = createRouter({
           name: RouteNames.APPLICATION_ENVIRONMENT,
           path: 'environment',
           component: () => import('@/components/environment/EnvironmentDashboard.vue'),
+        },
+        {
+          name: RouteNames.APPLICATION_ROUTES,
+          path: 'routes',
+          component: () => import('@/components/route/RoutesDashboard.vue'),
         },
         {
           name: RouteNames.APPLICATION_SERVICES,

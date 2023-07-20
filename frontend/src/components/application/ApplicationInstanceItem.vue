@@ -1,10 +1,61 @@
 <script setup lang="ts">
 import { CFProcessStats } from '@/models/cf/process';
 import { convertMemory, MemoryUnit, percentage } from '@/utils/number';
+import { computed } from 'vue';
+
+type StatKey = 'memory' | 'disk' | 'cpu';
+
+type Stat = {
+  value: number;
+  quota: number;
+};
+
+type StatUI = {
+  value: string;
+  quota: string;
+  percentage: number;
+  color: 'success' | 'warning' | 'error';
+};
 
 const props = defineProps<{
   process: CFProcessStats;
 }>();
+
+const stats = computed<Partial<Record<StatKey, StatUI>>>(() => {
+  if (!props.process.usage) {
+    return {};
+  }
+
+  const result: Record<StatKey, Stat> = {
+    memory: {
+      value: props.process.usage.mem,
+      quota: props.process.mem_quota,
+    },
+    disk: {
+      value: props.process.usage.disk,
+      quota: props.process.disk_quota,
+    },
+    cpu: {
+      value: props.process.usage.cpu,
+      quota: props.process.fds_quota,
+    },
+  };
+
+  return Object.fromEntries(
+    Object.entries(result).map(([key, stat]) => {
+      const percentageValue = percentage(stat.value, stat.quota);
+
+      const statUI: StatUI = {
+        value: convertMemory(stat.value, MemoryUnit.B).MB.toFixed(2),
+        quota: convertMemory(stat.quota, MemoryUnit.B).MB.toFixed(2),
+        percentage: percentageValue,
+        color: percentageValue > 90 ? 'error' : percentageValue > 80 ? 'warning' : 'success',
+      };
+
+      return [key, statUI];
+    }),
+  );
+});
 </script>
 
 <template>
@@ -14,66 +65,33 @@ const props = defineProps<{
     <td cols="auto">{{ process.state }}</td>
 
     <td>
-      <v-row>
-        <v-col>
-          <template v-if="process.usage !== undefined">
-            {{ convertMemory(process.usage?.mem, MemoryUnit.B).MB.toFixed(2) }} /
-            {{ convertMemory(process.mem_quota, MemoryUnit.B).MB.toFixed(2) }} MB
-          </template>
-          <template v-else>--</template>
-        </v-col>
-      </v-row>
+      <div>
+        <template v-if="stats.memory">{{ stats.memory.value }} / {{ stats.memory.quota }} MB</template>
+        <template v-else>--</template>
+      </div>
 
-      <v-row>
-        <v-col>
-          <v-progress-linear
-            rounded
-            :model-value="percentage(process.usage?.mem ?? 0, process.mem_quota)"
-            color="success"></v-progress-linear>
-        </v-col>
-      </v-row>
+      <v-progress-linear rounded :model-value="stats.memory?.percentage ?? 0" :color="stats.memory?.color ?? 'danger'">
+      </v-progress-linear>
     </td>
 
     <td>
-      <v-row>
-        <v-col>
-          <template v-if="process.usage !== undefined">
-            {{ convertMemory(process.usage.disk, MemoryUnit.B).MB.toFixed(2) }} /
-            {{ convertMemory(process.disk_quota, MemoryUnit.B).MB.toFixed(2) }} MB
-          </template>
-          <template v-else>--</template>
-        </v-col>
-      </v-row>
+      <div>
+        <template v-if="stats.disk">{{ stats.disk.value }} / {{ stats.disk.quota }} MB</template>
+        <template v-else>--</template>
+      </div>
 
-      <v-row>
-        <v-col>
-          <v-progress-linear
-            rounded
-            :model-value="percentage(process.usage?.disk ?? 0, process.disk_quota)"
-            color="success"></v-progress-linear>
-        </v-col>
-      </v-row>
+      <v-progress-linear rounded :model-value="stats.disk?.percentage ?? 0" :color="stats.disk?.color ?? 'danger'">
+      </v-progress-linear>
     </td>
 
     <td>
-      <v-row>
-        <v-col>
-          <template v-if="process.usage !== undefined">
-            {{ convertMemory(process.usage.cpu, MemoryUnit.B).MB.toFixed(2) }} /
-            {{ convertMemory(process.fds_quota, MemoryUnit.B).MB.toFixed(2) }} MB
-          </template>
-          <template v-else>--</template>
-        </v-col>
-      </v-row>
+      <div>
+        <template v-if="stats.cpu">{{ stats.cpu.value }} / {{ stats.cpu.quota }} MB</template>
+        <template v-else>--</template>
+      </div>
 
-      <v-row>
-        <v-col>
-          <v-progress-linear
-            rounded
-            :model-value="percentage(process.usage?.cpu ?? 0, process.fds_quota)"
-            color="success"></v-progress-linear>
-        </v-col>
-      </v-row>
+      <v-progress-linear rounded :model-value="stats.cpu?.percentage ?? 0" :color="stats.cpu?.color ?? 'danger'">
+      </v-progress-linear>
     </td>
   </tr>
 </template>

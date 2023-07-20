@@ -1,10 +1,6 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
 import { ApiErrorResponse, compactErrors } from '@/api';
 import applicationsApi from '@/api/application';
-import environmentApi from '@/api/environment';
-import processApi from '@/api/process';
-import serviceApi from '@/api/service';
 import ApiErrorAlert from '@/components/ApiErrorAlert.vue';
 import { provideApplicationContext } from '@/composables/useApplicationContext';
 import useLoadData from '@/composables/useLoadData';
@@ -12,6 +8,7 @@ import { onCachedActivated } from '@/hooks';
 import { CFApplication } from '@/models/cf/application';
 import { CFInclude } from '@/models/cf/common';
 import { RouteNames } from '@/router';
+import { computed, ref } from 'vue';
 
 const props = defineProps<{
   guid: CFApplication['guid'];
@@ -29,49 +26,18 @@ const {
   loading,
 );
 
-const {
-  data: environment,
-  error: environmentError,
-  loadData: loadEnvironment,
-  resetData: resetEnvironment,
-} = useLoadData(() => environmentApi.getForApplication(props.guid), loading);
-
-const {
-  data: services,
-  error: servicesError,
-  loadData: loadServices,
-  resetData: resetServices,
-} = useLoadData(async () => {
-  const bindings = await serviceApi.getBindingsForApplication(props.guid);
-  if (bindings.success) {
-    const guids = bindings.data.resources.map((binding) => binding.relationships.service_instance.data.guid);
-    return await serviceApi.getInstances(guids);
-  }
-  return bindings;
-}, loading);
-
-const {
-  data: processes,
-  error: processesError,
-  loadData: loadProcesses,
-  resetData: resetProcesses,
-} = useLoadData(() => processApi.getStatsForApplication(props.guid, 'web'), loading);
-
 const loadAllData = (invalidate: boolean = false) => {
   if (invalidate) {
     resetApplication();
-    resetEnvironment();
-    resetServices();
-    resetProcesses();
+    trigger('reset');
   }
   loadApplication();
-  loadEnvironment();
-  loadServices();
-  loadProcesses();
+  trigger('reload');
 };
 
-const apiError = computed<ApiErrorResponse | undefined>(() =>
-  compactErrors(applicationError.value, environmentError.value, processesError.value),
+const errors = ref<ApiErrorResponse[]>([]);
+const compactedErrors = computed<ApiErrorResponse | undefined>(() =>
+  compactErrors(applicationError.value, ...errors.value),
 );
 
 const executeAction = async (action: 'start' | 'stop' | 'restart') => {
@@ -82,29 +48,16 @@ const executeAction = async (action: 'start' | 'stop' | 'restart') => {
   }
 };
 
-onCachedActivated(() => props.guid, loadAllData);
+onCachedActivated(
+  () => props.guid,
+  (invalidate) => loadAllData(invalidate),
+);
 
-provideApplicationContext({
-  application,
-  environment,
-  services,
-  processes,
-  reload: (part, ...others) => {
-    const parts = [part, ...others];
-
-    if (parts.includes('application')) {
-      loadApplication();
-    }
-    if (parts.includes('environment')) {
-      loadEnvironment();
-    }
-    if (parts.includes('services')) {
-      loadServices();
-    }
-    if (parts.includes('processes')) {
-      loadProcesses();
-    }
-  },
+const { trigger } = provideApplicationContext({
+  guid: computed(() => props.guid),
+  loading,
+  errors,
+  application: computed(() => application.value),
 });
 </script>
 
@@ -112,9 +65,9 @@ provideApplicationContext({
   <v-container fluid class="pa-0">
     <v-progress-linear v-if="loading" indeterminate color="primary"></v-progress-linear>
 
-    <v-row v-if="apiError">
+    <v-row v-if="compactedErrors">
       <v-col>
-        <api-error-alert :error="apiError"></api-error-alert>
+        <api-error-alert :error="compactedErrors"></api-error-alert>
       </v-col>
     </v-row>
 
@@ -171,6 +124,10 @@ provideApplicationContext({
             :to="{ name: RouteNames.APPLICATION_ENVIRONMENT, params: { guid: application.guid } }">
           </v-list-item>
           <v-list-item
+            title="Routes"
+            :to="{ name: RouteNames.APPLICATION_ROUTES, params: { guid: application.guid } }">
+          </v-list-item>
+          <v-list-item
             title="Services"
             :to="{ name: RouteNames.APPLICATION_SERVICES, params: { guid: application.guid } }">
           </v-list-item>
@@ -181,7 +138,7 @@ provideApplicationContext({
         </v-list>
       </v-navigation-drawer>
 
-      <v-card-text v-if="application && environment && processes">
+      <v-card-text v-if="application">
         <router-view v-slot="{ Component }">
           <keep-alive>
             <component :is="Component"></component>

@@ -1,21 +1,39 @@
 <script setup lang="ts">
+import serviceApi from '@/api/service';
 import ServiceItem from '@/components/services/ServiceItem.vue';
 import useApplicationContext from '@/composables/useApplicationContext';
 import useFilterData from '@/composables/useFilterData';
+import useLoadData from '@/composables/useLoadData';
 
-const { services, reload } = useApplicationContext();
+const context = useApplicationContext();
+
+const { data, error, loadData, resetData } = useLoadData(async () => {
+  const bindings = await serviceApi.getBindingsForApplication(context.guid.value);
+  if (bindings.success) {
+    const guids = bindings.data.resources.map((binding) => binding.relationships.service_instance.data.guid);
+    return await serviceApi.getInstances(guids);
+  }
+  return bindings;
+}, context.loading);
+
+loadData();
+
+context.on('reload', () => {
+  loadData();
+});
+context.on('reset', () => {
+  resetData();
+});
 
 const { data: filteredServices, filters } = useFilterData((filters, { includesText }) => {
-  return services.value?.resources.filter((service) => {
+  return data.value?.resources.filter((service) => {
     return !filters.text || includesText(service.name);
   });
 });
-
-const reloadData = () => reload('services');
 </script>
 
 <template>
-  <v-row class="flex-column" v-if="services">
+  <v-row class="flex-column" v-if="data">
     <v-col>
       <v-row>
         <v-col>
@@ -23,12 +41,12 @@ const reloadData = () => reload('services');
         </v-col>
 
         <v-col cols="auto">
-          <v-btn variant="text" @click="reloadData" size="large">
+          <v-btn variant="text" @click="loadData" size="large">
             <v-icon>mdi-cached</v-icon>
           </v-btn>
         </v-col>
 
-        <v-col cols="auto">{{ filteredServices.length }}/{{ services.resources.length }}</v-col>
+        <v-col cols="auto">{{ filteredServices.length }}/{{ data.resources.length }}</v-col>
       </v-row>
 
       <v-row>

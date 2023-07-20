@@ -2,6 +2,7 @@
 import dayjs from 'dayjs';
 import { CFApplication } from '@/models/cf/application';
 import { RouteNames } from '@/router';
+import CopyableText from '@/components/shared/CopyableText.vue';
 
 const props = defineProps<{
   application: CFApplication;
@@ -14,40 +15,48 @@ const props = defineProps<{
 
     <v-card-text>
       <v-row>
-        <v-col>Etat</v-col>
-        <v-col>{{ application.state }}</v-col>
+        <v-col>
+          <div>Etat</div>
+          <div>{{ application.state }}</div>
+        </v-col>
+
+        <v-col>
+          <div>Guid <copyable-text :text="application.guid"></copyable-text></div>
+          <div>{{ application.guid }}</div>
+        </v-col>
       </v-row>
 
       <v-row>
-        <v-col>Créée</v-col>
         <v-col>
-          {{ dayjs(application.created_at).format('DD/MM/YYYY HH:mm:ss') }}
+          <div>Créée</div>
+          <div>{{ dayjs(application.created_at).format('DD/MM/YYYY HH:mm:ss') }}</div>
         </v-col>
-      </v-row>
-      <v-row>
-        <v-col>Mise à jour</v-col>
+
         <v-col>
-          {{ dayjs(application.updated_at).format('DD/MM/YYYY HH:mm:ss') }}
+          <div>Mise à jour</div>
+          <div>{{ dayjs(application.updated_at).format('DD/MM/YYYY HH:mm:ss') }}</div>
         </v-col>
       </v-row>
 
       <template v-if="application.included">
         <v-row>
-          <v-col>Organisation</v-col>
-          <v-col v-if="application.included.organizations.length > 0">
-            <router-link
-              :to="{ name: RouteNames.ORGANIZATION, params: { guid: application.included.organizations[0].guid } }">
-              {{ application.included.organizations[0].name }}
-            </router-link>
+          <v-col>
+            <div>Organisation</div>
+            <div v-if="application.included.organizations[0]">
+              <router-link
+                :to="{ name: RouteNames.ORGANIZATION, params: { guid: application.included.organizations[0].guid } }">
+                {{ application.included.organizations[0].name }}
+              </router-link>
+            </div>
           </v-col>
-        </v-row>
 
-        <v-row>
-          <v-col>Space</v-col>
-          <v-col v-if="application.included.spaces.length > 0">
-            <router-link :to="{ name: RouteNames.SPACE, params: { guid: application.included.spaces[0].guid } }">
-              {{ application.included.spaces[0].name }}
-            </router-link>
+          <v-col>
+            <div>Space</div>
+            <div v-if="application.included.spaces[0]">
+              <router-link :to="{ name: RouteNames.SPACE, params: { guid: application.included.spaces[0].guid } }">
+                {{ application.included.spaces[0].name }}
+              </router-link>
+            </div>
           </v-col>
         </v-row>
       </template>
