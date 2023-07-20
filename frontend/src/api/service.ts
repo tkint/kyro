@@ -1,6 +1,11 @@
 import { handleApiCall } from '@/api';
 import { CFApplication } from '@/models/cf/application';
-import { CFServiceInstance, PaginatedServiceBindings, PaginatedServiceInstances } from '@/models/cf/service';
+import {
+  CFServiceBinding,
+  CFServiceInstance,
+  PaginatedServiceBindings,
+  PaginatedServiceInstances,
+} from '@/models/cf/service';
 import { useAuthStore } from '@/stores/auth';
 
 export default {
@@ -19,6 +24,12 @@ export default {
       query: {
         guids: guids,
       },
+      authorization: useAuthStore().getAuthorization,
+    });
+  },
+  getBindingsDetails: async (guid: CFServiceBinding['guid']) => {
+    return await handleApiCall<object>({
+      path: `/v3/service_credential_bindings/${guid}/details`,
       authorization: useAuthStore().getAuthorization,
     });
   },

@@ -28,7 +28,7 @@ const props = defineProps<{
 
       <v-row>
         <v-col>
-          <div>Créée</div>
+          <div>Création</div>
           <div>{{ dayjs(application.created_at).format('DD/MM/YYYY HH:mm:ss') }}</div>
         </v-col>
 
