@@ -7,8 +7,10 @@ export default <T>(data: Ref<T[]>, options: { perPage: number | Ref<number> }) =
 
   const pages = computed(() => Math.ceil(data.value.length / perPage.value));
 
-  watch(pages, (newValue) => {
-    if (newValue < currentPage.value) {
+  watch(pages, (newValue, oldValue) => {
+    if (oldValue < 1) {
+      currentPage.value = 1;
+    } else if (currentPage.value > newValue) {
       currentPage.value = newValue;
     }
   });

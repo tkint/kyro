@@ -152,17 +152,22 @@ const { data: paginatedApplications, pagination } = usePagination(filteredApplic
           <v-col cols="auto">{{ filteredApplications.length }}/{{ applications.length }}</v-col>
         </v-row>
 
-        <v-row>
-          <v-col cols="3" v-for="application in paginatedApplications" :key="`application-${application.guid}`">
-            <application-item :application="application"></application-item>
-          </v-col>
-        </v-row>
+        <template v-if="paginatedApplications.length > 0">
 
-        <v-row>
-          <v-col>
-            <v-pagination v-model="pagination.page" :length="pagination.pages"></v-pagination>
-          </v-col>
-        </v-row>
+          <v-row>
+            <v-col cols="3" v-for="application in paginatedApplications" :key="`application-${application.guid}`">
+              <application-item :application="application"></application-item>
+            </v-col>
+          </v-row>
+          
+          <v-row>
+            <v-col>
+              <v-pagination v-model="pagination.page" :length="pagination.pages"></v-pagination>
+            </v-col>
+          </v-row>
+        </template>
+
+        <v-alert color="warning" variant="outlined" icon="$warning" v-else-if="!loading">No application found</v-alert>
       </template>
     </template>
   </v-container>

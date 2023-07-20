@@ -4,6 +4,9 @@ import { useOrganizationsStore } from '@/stores/organizations';
 import { filter, includes, some, upperCase } from 'lodash';
 import { computed } from 'vue';
 
+/**
+ * TODO: Is it really useful ?
+ */
 export default () => {
   const organizationsStore = useOrganizationsStore();
   const quotasStore = useOrganizationQuotasStore();

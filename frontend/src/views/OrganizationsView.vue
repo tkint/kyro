@@ -39,17 +39,21 @@ onActivated(fetchData);
         </v-col>
       </v-row>
 
-      <v-row>
-        <v-col cols="3" v-for="organization in paginatedData" :key="`organization-${organization.guid}`">
-          <organization-item :organization="organization"></organization-item>
-        </v-col>
-      </v-row>
+      <template v-if="paginatedData.length > 0">
+        <v-row>
+          <v-col cols="3" v-for="organization in paginatedData" :key="`organization-${organization.guid}`">
+            <organization-item :organization="organization"></organization-item>
+          </v-col>
+        </v-row>
 
-      <v-row>
-        <v-col>
-          <v-pagination v-model="pagination.page" :length="pagination.pages"></v-pagination>
-        </v-col>
-      </v-row>
+        <v-row>
+          <v-col>
+            <v-pagination v-model="pagination.page" :length="pagination.pages"></v-pagination>
+          </v-col>
+        </v-row>
+      </template>
+
+      <v-alert color="warning" variant="outlined" icon="$warning" v-else-if="!loading">No organization found</v-alert>
     </template>
   </v-container>
 </template>
