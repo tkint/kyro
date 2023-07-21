@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import dayjs from 'dayjs';
-import { CFApplication } from '@/models/cf/application';
-import { RouteNames } from '@/router';
 import CopyableText from '@/components/shared/CopyableText.vue';
+import { CFApplication } from '@/models/cf/application';
+import { RouteNames } from '@/core/router';
+import dayjs from 'dayjs';
 
 const props = defineProps<{
   application: CFApplication;
@@ -63,3 +63,4 @@ const props = defineProps<{
     </v-card-text>
   </v-card>
 </template>
+@/core/router

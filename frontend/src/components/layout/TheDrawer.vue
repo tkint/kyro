@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { computed } from 'vue';
-import { RouteLocationRaw, useRouter } from 'vue-router';
-import { RouteNames } from '@/router';
+import { RouteNames } from '@/core/router';
 import { useAuthStore } from '@/stores/auth';
+import { computed } from 'vue';
+import { useI18n } from 'vue-i18n';
+import { RouteLocationRaw, useRouter } from 'vue-router';
 
 type MenuItem = {
   label: string;
@@ -18,6 +19,7 @@ const emits = defineEmits<{
   (e: 'update:compact', newValue: boolean): void;
 }>();
 
+const { t } = useI18n();
 const router = useRouter();
 const authStore = useAuthStore();
 
@@ -26,10 +28,10 @@ const localCompact = computed({
   set: (newValue) => emits('update:compact', newValue),
 });
 
-const menus: MenuItem[] = [
-  { label: 'Applications', route: { name: RouteNames.APPLICATIONS }, icon: 'mdi-view-dashboard' },
-  { label: 'Organisations', route: { name: RouteNames.ORGANIZATIONS }, icon: 'mdi-file-tree-outline' },
-];
+const menus = computed<MenuItem[]>(() => [
+  { label: t('menu.applications'), route: { name: RouteNames.APPLICATIONS }, icon: 'mdi-view-dashboard' },
+  { label: t('menu.organizations'), route: { name: RouteNames.ORGANIZATIONS }, icon: 'mdi-file-tree-outline' },
+]);
 
 const logout = () => {
   authStore.$reset();
@@ -55,7 +57,7 @@ const logout = () => {
     </v-list>
 
     <template #append>
-      <v-list color="primary" bg-color="transparent" v-if="localCompact" style="opacity: 0.6">
+      <v-list color="primary" bg-color="transparent" v-if="localCompact">
         <v-list-item>
           <v-icon>mdi-account</v-icon>
           <v-tooltip activator="parent" location="right">
@@ -66,7 +68,7 @@ const logout = () => {
 
         <v-list-item @click="logout">
           <v-icon>mdi-logout</v-icon>
-          <v-tooltip activator="parent" location="right">Déconnexion</v-tooltip>
+          <v-tooltip activator="parent" location="right">{{ t('auth.logout') }}</v-tooltip>
         </v-list-item>
       </v-list>
 
@@ -80,9 +82,11 @@ const logout = () => {
             {{ authStore.decodedToken?.email }}
           </v-card-subtitle>
 
-          <v-card-actions>
-            <v-btn block @click="logout" prepend-icon="mdi-logout">Déconnexion</v-btn>
-          </v-card-actions>
+          <v-card-text class="pa-1">
+            <v-btn @click="logout" prepend-icon="mdi-logout" class="justify-start" flat block>
+              {{ t('auth.logout') }}
+            </v-btn>
+          </v-card-text>
         </v-card>
       </div>
     </template>

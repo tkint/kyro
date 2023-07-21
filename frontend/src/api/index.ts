@@ -1,7 +1,8 @@
 import { HttpMethod } from '@/models/common';
-import { arrayOfNotFalsy, distinct } from '@/utils/array';
+import { arrayOfNotFalsy } from '@/utils/array';
 import { Result } from '@/utils/result';
 import { absoluteOrRelativeURL } from '@/utils/url';
+import { uniq } from 'lodash';
 
 const serverUrl: string = import.meta.env.VITE_SERVER_URL || '';
 
@@ -102,7 +103,7 @@ export const queryParams = (params: Record<string, any>): Record<string, any> =>
 };
 
 export const compactErrors = (...errors: (ApiErrorResponse | undefined | false)[]): ApiErrorResponse | undefined => {
-  const flattenErrors = distinct(arrayOfNotFalsy(...errors).flatMap((error) => error.errors));
+  const flattenErrors = uniq(arrayOfNotFalsy(...errors).flatMap((error) => error.errors));
   return flattenErrors.length > 0 ? { errors: flattenErrors } : undefined;
 };
 

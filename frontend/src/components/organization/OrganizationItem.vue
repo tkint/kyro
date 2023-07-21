@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { RouteNames } from '@/core/router';
 import { PaginatedOrganizations } from '@/models/cf/organization';
 import { PaginatedOrganizationQuotas } from '@/models/cf/organizationQuota';
-import { RouteNames } from '@/router';
 import { formatDate } from '@/utils/date';
 import { convertMemory, MemoryUnit } from '@/utils/number';
+import { computed } from 'vue';
 
 const props = defineProps<{
   organization: PaginatedOrganizations['resources'][0] & { quota?: PaginatedOrganizationQuotas['resources'][0] };
@@ -47,3 +47,4 @@ const memory = computed(() => {
     </v-card-text>
   </v-card>
 </template>
+@/core/router

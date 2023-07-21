@@ -1,10 +1,13 @@
 <script setup lang="ts">
-import { ref } from 'vue';
-import { z } from 'zod';
 import { ApiErrorResponse } from '@/api';
+import LocalePicker from '@/components/shared/LocalePicker.vue';
 import { useForm } from '@/composables/useForm';
 import { useAuthStore } from '@/stores/auth';
+import { ref } from 'vue';
+import { useI18n } from 'vue-i18n';
+import { z } from 'zod';
 
+const { t } = useI18n();
 const authStore = useAuthStore();
 
 const { input, rulesFor, isValid } = useForm(
@@ -39,26 +42,36 @@ const submit = async () => {
       <v-row class="h-100" justify="center" align-content="center">
         <v-col cols="4">
           <v-card>
-            <v-card-title>Connexion</v-card-title>
+            <v-card-title>
+              <v-row>
+                <v-col>{{ t('auth.authentication') }}</v-col>
+
+                <v-col cols="auto">
+                  <locale-picker></locale-picker>
+                </v-col>
+              </v-row>
+            </v-card-title>
 
             {{ error }}
 
-            <v-card-text>
-              <v-text-field label="Identifiant" v-model="input.username" required :rules="rulesFor('username')">
+            <v-card-text class="pb-0">
+              <v-text-field :label="t('auth.username')" v-model="input.username" required :rules="rulesFor('username')">
               </v-text-field>
 
               <v-text-field
-                label="Mot de passe"
+                :label="t('auth.password')"
                 type="password"
                 v-model="input.password"
                 required
                 :rules="rulesFor('password')">
               </v-text-field>
-
-              <v-btn type="submit" class="mx-auto" color="teal-accent-4" :disabled="!isValid" :loading="loading">
-                Se connecter
-              </v-btn>
             </v-card-text>
+
+            <v-card-actions class="pt-0">
+              <v-btn block type="submit" color="teal-accent-4" :disabled="!isValid" :loading="loading">
+                {{ t('auth.login') }}
+              </v-btn>
+            </v-card-actions>
           </v-card>
         </v-col>
       </v-row>

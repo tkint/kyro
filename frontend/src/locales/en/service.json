@@ -1,0 +1,11 @@
+{
+  "service": "Service",
+  "services": "Services",
+  "instance": {
+    "": "Instance",
+    "type": "Type"
+  },
+  "binding": {
+    "type": "Type"
+  }
+}

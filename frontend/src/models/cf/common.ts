@@ -63,3 +63,11 @@ export namespace CFPaginated {
     previous?: CFLink;
   }
 }
+
+export const mapResources = <TObject, TNewObject>(
+  paginated: CFPaginated<TObject>,
+  predicate: (obj: Omit<TObject, 'included'>) => TNewObject,
+): CFPaginated<TNewObject> => ({
+  ...paginated,
+  resources: paginated.resources.map((obj) => predicate(obj)),
+});

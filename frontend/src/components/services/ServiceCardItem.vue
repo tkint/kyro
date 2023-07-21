@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { computed } from 'vue';
 import { CFServiceInstance } from '@/models/cf/service';
 import { formatDate } from '@/utils/date';
+import { computed } from 'vue';
 
 const props = defineProps<{
   service: CFServiceInstance;

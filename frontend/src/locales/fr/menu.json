@@ -1,0 +1,4 @@
+{
+  "applications": "@:application.applications",
+  "organizations": "Organisations"
+}

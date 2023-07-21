@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { CFProcessStats } from '@/models/cf/process';
 import { convertMemory, MemoryUnit, percentage } from '@/utils/number';
+import { mapValues } from 'lodash';
 import { computed } from 'vue';
 
 type StatKey = 'memory' | 'disk' | 'cpu';
@@ -41,20 +42,18 @@ const stats = computed<Partial<Record<StatKey, StatUI>>>(() => {
     },
   };
 
-  return Object.fromEntries(
-    Object.entries(result).map(([key, stat]) => {
-      const percentageValue = percentage(stat.value, stat.quota);
+  return mapValues(result, (stat, key) => {
+    const percentageValue = percentage(stat.value, stat.quota);
 
-      const statUI: StatUI = {
-        value: convertMemory(stat.value, MemoryUnit.B).MB.toFixed(2),
-        quota: convertMemory(stat.quota, MemoryUnit.B).MB.toFixed(2),
-        percentage: percentageValue,
-        color: percentageValue > 90 ? 'error' : percentageValue > 80 ? 'warning' : 'success',
-      };
+    const statUI: StatUI = {
+      value: convertMemory(stat.value, MemoryUnit.B).MB.toFixed(2),
+      quota: convertMemory(stat.quota, MemoryUnit.B).MB.toFixed(2),
+      percentage: percentageValue,
+      color: percentageValue > 90 ? 'error' : percentageValue > 80 ? 'warning' : 'success',
+    };
 
-      return [key, statUI];
-    }),
-  );
+    return [key, statUI];
+  });
 });
 </script>
 

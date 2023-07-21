@@ -1,0 +1,9 @@
+{
+  "application": "Application",
+  "applications": "Applications",
+  "filter": {
+    "organization": "@:organization.organization",
+    "space": "@:space.space",
+    "text": "Filter"
+  }
+}

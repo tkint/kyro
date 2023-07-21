@@ -1,7 +1,7 @@
 <script setup lang="ts">
+import { RouteNames } from '@/core/router';
 import { PaginatedApplications } from '@/models/cf/application';
 import { CFResource } from '@/models/cf/common';
-import { RouteNames } from '@/router';
 import { formatDate } from '@/utils/date';
 
 type RelatedResource = {
@@ -57,3 +57,4 @@ defineProps<{
     </v-card-text>
   </v-card>
 </template>
+@/core/router

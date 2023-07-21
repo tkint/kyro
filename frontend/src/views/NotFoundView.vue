@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { RouteNames } from '@/router';
+import { RouteNames } from '@/core/router';
 
 const props = defineProps<{
   pathMatch: string[];
@@ -25,3 +25,4 @@ const props = defineProps<{
     </v-row>
   </v-container>
 </template>
+@/core/router

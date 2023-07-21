@@ -4,10 +4,10 @@ import applicationsApi from '@/api/application';
 import ApiErrorAlert from '@/components/ApiErrorAlert.vue';
 import { provideApplicationContext } from '@/composables/useApplicationContext';
 import useLoadData from '@/composables/useLoadData';
+import { RouteNames } from '@/core/router';
 import { onCachedActivated } from '@/hooks';
 import { CFApplication } from '@/models/cf/application';
 import { CFInclude } from '@/models/cf/common';
-import { RouteNames } from '@/router';
 import { computed, ref } from 'vue';
 
 const props = defineProps<{
@@ -63,7 +63,7 @@ const { trigger } = provideApplicationContext({
 
 <template>
   <v-container fluid class="pa-0">
-    <v-progress-linear v-if="loading" indeterminate color="primary"></v-progress-linear>
+    <v-progress-linear indeterminate :color="loading ? 'primary' : 'transparent'"></v-progress-linear>
 
     <v-row v-if="compactedErrors">
       <v-col>
@@ -123,9 +123,7 @@ const { trigger } = provideApplicationContext({
             title="Environnement"
             :to="{ name: RouteNames.APPLICATION_ENVIRONMENT, params: { guid: application.guid } }">
           </v-list-item>
-          <v-list-item
-            title="Routes"
-            :to="{ name: RouteNames.APPLICATION_ROUTES, params: { guid: application.guid } }">
+          <v-list-item title="Routes" :to="{ name: RouteNames.APPLICATION_ROUTES, params: { guid: application.guid } }">
           </v-list-item>
           <v-list-item
             title="Services"
@@ -148,3 +146,4 @@ const { trigger } = provideApplicationContext({
     </v-card>
   </v-container>
 </template>
+@/core/router

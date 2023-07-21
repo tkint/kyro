@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import routeApi from '@/api/route';
+import RouteTable from '@/components/route/RouteTable.vue';
 import useApplicationContext from '@/composables/useApplicationContext';
 import useFilterData from '@/composables/useFilterData';
 import useLoadData from '@/composables/useLoadData';
-import { formatDate } from '@/utils/date';
 import { computed } from 'vue';
 
 const context = useApplicationContext();
@@ -41,8 +41,8 @@ const { data: filteredRoutes, filters } = useFilterData((filters, { includesText
 <template>
   <v-row class="flex-column" v-if="data">
     <v-col>
-      <v-row>
-        <v-col>
+      <v-row justify="end">
+        <v-col cols="3">
           <v-text-field clearable label="Filtrer" density="compact" v-model="filters.text"></v-text-field>
         </v-col>
 
@@ -55,38 +55,7 @@ const { data: filteredRoutes, filters } = useFilterData((filters, { includesText
         <v-col cols="auto">{{ filteredRoutes.length }}/{{ data.resources.length }}</v-col>
       </v-row>
 
-      <v-table>
-        <thead>
-          <tr>
-            <th>Route</th>
-            <th>Port</th>
-            <th>Creation date</th>
-            <th>Destinations</th>
-          </tr>
-        </thead>
-
-        <tbody>
-          <template v-for="route in filteredRoutes" :key="`route-${route.guid}`">
-            <tr>
-              <td>
-                <a target="_blank" :href="`${route.protocol}://${route.url}`">
-                  {{ route.protocol }}://{{ route.url }}
-                </a>
-              </td>
-
-              <td>{{ route.port || '--' }}</td>
-
-              <td>{{ formatDate(route.created_at, 'DD/MM/YYYY HH:mm:ss') }}</td>
-
-              <td>
-                <div v-for="destination in route.destinations" :key="`destination-${destination.guid}`">
-                  {{ destination.protocol }} - {{ destination.port }}
-                </div>
-              </td>
-            </tr>
-          </template>
-        </tbody>
-      </v-table>
+      <route-table :routes="filteredRoutes"></route-table>
     </v-col>
   </v-row>
 </template>
