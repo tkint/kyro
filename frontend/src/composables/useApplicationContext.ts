@@ -1,7 +1,7 @@
 import { ApiErrorResponse } from '@/api';
 import useContext from '@/composables/useContext';
 import { CFApplication } from '@/models/cf/application';
-import { ComputedRef, Ref } from 'vue';
+import { ComputedRef, Ref, computed } from 'vue';
 
 type Event = 'reload' | 'reset';
 
@@ -35,12 +35,15 @@ export const provideApplicationContext = (context: Omit<ApplicationContext, 'on'
   };
 };
 
-export default () => {
+export default (): ApplicationContext & { application: ComputedRef<CFApplication> } => {
   const context = inject();
 
-  if (!context) {
+  if (!context.application.value) {
     throw Error('Context not initialized');
   }
 
-  return context;
+  return {
+    ...context,
+    application: computed(() => context.application.value!!),
+  };
 };

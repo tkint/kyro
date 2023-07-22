@@ -1,38 +1,35 @@
-import { computed, reactive } from "vue";
-import { z } from "zod";
+import { ComputedRef, UnwrapNestedRefs, computed, reactive } from 'vue';
+import { z } from 'zod';
 
 type ValidationResult = string | true;
 type ValidationRule = (value: any) => ValidationResult;
 
-type TypedZodRawShape<TObject> = Record<
-  keyof TObject,
-  z.ZodType<TObject[keyof TObject]>
->;
+type InferShape<TObj extends object> = {
+  [TKey in keyof TObj]-?: undefined extends TObj[TKey] ? z.ZodOptional<z.ZodType<TObj[TKey]>> : z.ZodType<TObj[TKey]>;
+};
 
-export const useForm = <TObject extends object>(
-  shape: TypedZodRawShape<TObject>,
-  initialValue: TObject
-) => useInferedForm(shape, initialValue as any);
+type UseFormReturn<TObj extends object, TSchema = any> = {
+  schema: TSchema;
+  input: UnwrapNestedRefs<TObj>;
+  rulesFor: <TField extends keyof TObj>(field: TField) => ValidationRule[];
+  validate: () => z.SafeParseReturnType<TObj, TObj>;
+  isValid: ComputedRef<boolean>;
+};
 
-export const useInferedForm = <
-  TShape extends z.ZodRawShape,
-  TObject extends z.infer<typeof schema>
->(
-  shape: TShape,
-  initialValue: TObject
-) => {
-  const schema = z.object<TShape>(shape);
+export const useForm = <TObj extends object>(
+  shape: InferShape<TObj>,
+  initialValue: TObj,
+): UseFormReturn<TObj, typeof schema> => {
+  const schema = z.object(shape);
   const input = reactive(initialValue);
 
-  const validate = () => schema.safeParse(input);
+  const validate = () => schema.safeParse(input) as z.SafeParseReturnType<TObj, TObj>;
 
   return {
     schema,
     input,
-    rulesFor: <TField extends keyof TShape>(
-      field: TField
-    ): ValidationRule[] => {
-      const fieldSpec = shape[field];
+    rulesFor: (field) => {
+      const fieldSpec = shape[field as keyof typeof shape];
       return [
         (value) => {
           const result = fieldSpec.safeParse(value);
@@ -41,7 +38,7 @@ export const useInferedForm = <
         },
       ];
     },
-    validate: () => schema.safeParse(input),
+    validate,
     isValid: computed(() => validate().success),
   };
 };

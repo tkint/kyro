@@ -1,8 +1,7 @@
 <script setup lang="ts">
-import { getCurrentInstance, onMounted, watch, nextTick, ref } from 'vue';
-import { z } from 'zod';
 import { useForm } from '@/composables/useForm';
 import { EnvironmentVariableInput } from '@/models/environment';
+import { z } from 'zod';
 
 const props = defineProps<{
   initialInput?: EnvironmentVariableInput;
@@ -40,14 +39,16 @@ const submit = () => {
           required
           :autofocus="!initialInput"
           :disabled="!!initialInput"
-          :rules="rulesFor('key')"></v-text-field>
+          :rules="rulesFor('key')">
+        </v-text-field>
         <v-text-field
           label="Valeur"
           density="compact"
           v-model="input.value"
           required
           :autofocus="!!initialInput"
-          :rules="rulesFor('value')"></v-text-field>
+          :rules="rulesFor('value')">
+        </v-text-field>
       </v-card-text>
 
       <v-card-actions>

@@ -48,7 +48,7 @@ watch([processesError, sshEnabledError], (newValue) => {
 </script>
 
 <template>
-  <v-row class="" v-if="application">
+  <v-row class="">
     <v-col>
       <application-card :application="application"></application-card>
     </v-col>

@@ -49,18 +49,16 @@ const openVariableFormDialog = (value?: EnvironmentVariableInput) => {
   variableFormDialog.value = true;
 };
 const onVariableFormSubmit = async (newValue: EnvironmentVariableInput) => {
-  const appGuid = unref(application)?.guid;
-  if (appGuid) {
-    await environmentApi.setVariableForApplication(appGuid, newValue);
-    variableFormDialog.value = false;
-    loadData();
-  }
+  const { guid: appGuid } = unref(application);
+  await environmentApi.setVariableForApplication(appGuid, newValue);
+  variableFormDialog.value = false;
+  loadData();
 };
 
 const deletingVariableKey = ref<string>();
 const onVariableDeleteSubmit = async () => {
-  const appGuid = unref(application)?.guid;
-  if (appGuid && deletingVariableKey.value) {
+  const { guid: appGuid } = unref(application);
+  if (deletingVariableKey.value) {
     await environmentApi.unsetVariableForApplication(appGuid, deletingVariableKey.value);
     deletingVariableKey.value = undefined;
     loadData();
