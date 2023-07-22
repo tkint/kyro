@@ -47,4 +47,3 @@ const memory = computed(() => {
     </v-card-text>
   </v-card>
 </template>
-@/core/router

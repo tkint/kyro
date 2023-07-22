@@ -57,7 +57,7 @@ onActivated(loadData);
       </v-row>
 
       <template v-else>
-        <v-row justify="end">
+        <v-row align="center" justify="end">
           <v-col cols="4">
             <v-text-field label="Filtrer" density="compact" v-model="filters.text" clearable hide-details>
             </v-text-field>

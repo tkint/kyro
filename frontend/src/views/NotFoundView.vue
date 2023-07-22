@@ -25,4 +25,3 @@ const props = defineProps<{
     </v-row>
   </v-container>
 </template>
-@/core/router

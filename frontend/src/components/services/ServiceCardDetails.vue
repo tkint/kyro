@@ -20,7 +20,7 @@ const { t } = useI18n();
         <v-row>
           <v-col>
             <v-card>
-              <v-card-title>{{ t('service.instance') }}</v-card-title>
+              <v-card-title>{{ t('service.instance.title') }}</v-card-title>
 
               <v-card-text>
                 <v-row>
@@ -138,4 +138,3 @@ const { t } = useI18n();
     </v-card-text>
   </v-card>
 </template>
-@/components/services/models

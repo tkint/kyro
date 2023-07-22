@@ -77,7 +77,7 @@ const onVariableDeleteSubmit = async () => {
 
     <v-dialog :model-value="!!deletingVariableKey" @update:model-value="deletingVariableKey = undefined" width="500">
       <v-card>
-        <v-card-text> Supprimer la variable `{{ deletingVariableKey }}` ? </v-card-text>
+        <v-card-text>Supprimer la variable `{{ deletingVariableKey }}` ?</v-card-text>
 
         <v-card-actions>
           <v-btn color="danger" @click="onVariableDeleteSubmit">Oui</v-btn>

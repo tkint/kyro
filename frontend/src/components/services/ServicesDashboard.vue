@@ -98,7 +98,7 @@ const openService = async (service: ServiceWithBinding) => {
 
       <v-row justify="end">
         <v-col cols="3">
-          <v-text-field clearable label="Filtrer" density="compact" v-model="filters.text"></v-text-field>
+          <v-text-field label="Filtrer" density="compact" v-model="filters.text" clearable hide-details></v-text-field>
         </v-col>
 
         <v-col cols="auto">
@@ -118,4 +118,3 @@ const openService = async (service: ServiceWithBinding) => {
     </v-col>
   </v-row>
 </template>
-@/components/services/models

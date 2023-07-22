@@ -146,4 +146,3 @@ const { trigger } = provideApplicationContext({
     </v-card>
   </v-container>
 </template>
-@/core/router
