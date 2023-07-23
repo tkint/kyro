@@ -47,10 +47,10 @@ export interface CFResourceWithRelationShips extends CFResource {
   included?: Record<string, CFResource[]>;
 }
 
-export interface CFPaginated<TObject> {
+export interface CFPaginated<TObject extends CFResource, TIncluded extends Record<string, CFResource[]> = {}> {
   pagination: CFPaginated.Pagination;
   resources: Omit<TObject, 'included'>[];
-  included?: Record<string, CFResource[]>;
+  included?: Partial<TIncluded>;
 }
 
 export namespace CFPaginated {
@@ -64,10 +64,14 @@ export namespace CFPaginated {
   }
 }
 
-export const mapResources = <TObject, TNewObject>(
-  paginated: CFPaginated<TObject>,
+export const mapResources = <
+  TObject extends CFResource,
+  TNewObject extends CFResource,
+  TIncluded extends Record<string, CFResource[]>,
+>(
+  paginated: CFPaginated<TObject, TIncluded>,
   predicate: (obj: Omit<TObject, 'included'>) => TNewObject,
-): CFPaginated<TNewObject> => ({
+): CFPaginated<TNewObject, TIncluded> => ({
   ...paginated,
   resources: paginated.resources.map((obj) => predicate(obj)),
 });

@@ -5,8 +5,8 @@ import ApplicationCard from '@/components/application/ApplicationCard.vue';
 import ApplicationConfigurationCard from '@/components/application/ApplicationConfigurationCard.vue';
 import ApplicationInstancesCard from '@/components/application/ApplicationInstancesCard.vue';
 import ApplicationSshCard from '@/components/application/ApplicationSshCard.vue';
+import useApiCall from '@/composables/useApiCall';
 import useApplicationContext from '@/composables/useApplicationContext';
-import useLoadData from '@/composables/useLoadData';
 import { computed, watch } from 'vue';
 
 const context = useApplicationContext();
@@ -15,16 +15,16 @@ const application = computed(() => context.application.value);
 const {
   data: processes,
   error: processesError,
-  loadData: loadProcesses,
-  resetData: resetProcesses,
-} = useLoadData(() => processApi.getStatsForApplication(context.guid.value, 'web'), context.loading);
+  execute: loadProcesses,
+  reset: resetProcesses,
+} = useApiCall(() => processApi.getStatsForApplication(context.guid.value, 'web'), context.loading);
 
 const {
   data: sshEnabled,
   error: sshEnabledError,
-  loadData: loadSSHEnabled,
-  resetData: resetSSHEnabled,
-} = useLoadData(() => sshApi.getSSHEnabledForApplication(context.guid.value), context.loading);
+  execute: loadSSHEnabled,
+  reset: resetSSHEnabled,
+} = useApiCall(() => sshApi.getSSHEnabledForApplication(context.guid.value), context.loading);
 
 loadProcesses();
 loadSSHEnabled();

@@ -2,8 +2,8 @@
 import { ApiErrorResponse, compactErrors } from '@/api';
 import applicationsApi from '@/api/application';
 import ApiErrorAlert from '@/components/ApiErrorAlert.vue';
+import useApiCall from '@/composables/useApiCall';
 import { provideApplicationContext } from '@/composables/useApplicationContext';
-import useLoadData from '@/composables/useLoadData';
 import { RouteNames } from '@/core/router';
 import { onCachedActivated } from '@/hooks';
 import { CFApplication } from '@/models/cf/application';
@@ -19,9 +19,9 @@ const loading = ref(false);
 const {
   data: application,
   error: applicationError,
-  loadData: loadApplication,
-  resetData: resetApplication,
-} = useLoadData(
+  execute: loadApplication,
+  reset: resetApplication,
+} = useApiCall(
   () => applicationsApi.getOne(props.guid, { includes: [CFInclude.SPACE, CFInclude.SPACE_ORGANIZATION] }),
   loading,
 );

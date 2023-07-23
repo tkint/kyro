@@ -69,4 +69,6 @@ export namespace CFProcessStats {
   }
 }
 
-export type PaginatedProcessStats = CFPaginated<CFProcessStats>;
+export type ProcessStatsResources = {
+  resources: CFProcessStats[];
+};

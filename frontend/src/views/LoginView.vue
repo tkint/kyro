@@ -10,24 +10,21 @@ import { z } from 'zod';
 const { t } = useI18n();
 const authStore = useAuthStore();
 
-const { input, rulesFor, isValid } = useForm(
-  {
-    username: z.string().min(1),
-    password: z.string().min(1),
-  },
-  {
-    username: '',
-    password: '',
-  },
-);
+const { input, rulesFor, validate, isValid } = useForm({
+  username: z.string().min(1),
+  password: z.string().min(1),
+});
 
 const error = ref<ApiErrorResponse>();
 const loading = ref(false);
 const submit = async () => {
   error.value = undefined;
   loading.value = true;
-  if (isValid.value) {
-    const result = await authStore.initToken(input);
+
+  const validationResult = validate();
+
+  if (validationResult.success) {
+    const result = await authStore.initToken(validationResult.data);
     if (!result.success) {
       error.value = result.error;
     }

@@ -39,9 +39,9 @@ export const onSuccess = async <T, U, E = never>(
   return result;
 };
 
-export const flatOnSuccess = <T, U, E = never>(result: Result<T, E>, other: (data: T) => U): Result<U, E> => {
+export const flatOnSuccess = <T, U, E = never>(result: Result<T, E>, fn: (data: T) => U): Result<U, E> => {
   if (result.success) {
-    return successOf(other(result.data));
+    return successOf(fn(result.data));
   }
   return result;
 };

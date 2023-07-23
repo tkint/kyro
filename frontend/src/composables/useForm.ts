@@ -10,20 +10,20 @@ type InferShape<TObj extends object> = {
 
 type UseFormReturn<TObj extends object, TSchema = any> = {
   schema: TSchema;
-  input: UnwrapNestedRefs<TObj>;
+  input: UnwrapNestedRefs<Partial<TObj>>;
   rulesFor: <TField extends keyof TObj>(field: TField) => ValidationRule[];
-  validate: () => z.SafeParseReturnType<TObj, TObj>;
+  validate: () => z.SafeParseReturnType<Partial<TObj>, TObj>;
   isValid: ComputedRef<boolean>;
 };
 
 export const useForm = <TObj extends object>(
   shape: InferShape<TObj>,
-  initialValue: TObj,
+  initialValue?: Partial<TObj>,
 ): UseFormReturn<TObj, typeof schema> => {
   const schema = z.object(shape);
-  const input = reactive(initialValue);
+  const input = reactive<Partial<TObj>>(initialValue ?? {});
 
-  const validate = () => schema.safeParse(input) as z.SafeParseReturnType<TObj, TObj>;
+  const validate = () => schema.safeParse(input) as z.SafeParseReturnType<Partial<TObj>, TObj>;
 
   return {
     schema,

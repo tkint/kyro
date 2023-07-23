@@ -30,8 +30,8 @@ export namespace CFRoute {
     guid: string;
     app: Destination.App;
     port: number;
-    weight: number | null;
-    protocol: Destination.Protocol | null;
+    weight?: number;
+    protocol?: Destination.Protocol;
   }
 
   export namespace Destination {

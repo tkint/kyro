@@ -3,9 +3,9 @@ import serviceApi from '@/api/service';
 import ServiceCardDetails from '@/components/services/ServiceCardDetails.vue';
 import ServiceCardItem from '@/components/services/ServiceCardItem.vue';
 import { ServiceDetails, ServiceWithBinding } from '@/components/services/models';
+import useApiCall from '@/composables/useApiCall';
 import useApplicationContext from '@/composables/useApplicationContext';
 import useFilterData from '@/composables/useFilterData';
-import useLoadData from '@/composables/useLoadData';
 import { mapResources } from '@/models/cf/common';
 import { onSuccess, successOf } from '@/utils/result';
 import { ref } from 'vue';
@@ -25,9 +25,9 @@ const context = useApplicationContext();
 const {
   data: services,
   error: servicesError,
-  loadData,
-  resetData,
-} = useLoadData(async () => {
+  execute: loadData,
+  reset: resetData,
+} = useApiCall(async () => {
   const result = await serviceApi.getBindingsForApplication(context.guid.value).then((result) =>
     onSuccess(result, ({ resources }) => {
       const guids = resources.map((binding) => binding.relationships.service_instance.data.guid);

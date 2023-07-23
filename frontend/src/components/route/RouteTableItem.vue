@@ -5,6 +5,11 @@ import { formatDate } from '@/utils/date';
 defineProps<{
   route: CFRoute;
 }>();
+
+const emits = defineEmits<{
+  (e: 'open'): void;
+  (e: 'unmap'): void;
+}>();
 </script>
 
 <template>
@@ -21,6 +26,19 @@ defineProps<{
       <div v-for="destination in route.destinations" :key="`destination-${destination.guid}`">
         {{ destination.protocol }} - {{ destination.port }}
       </div>
+    </td>
+
+    <td>
+      <v-menu>
+        <template v-slot:activator="{ props }">
+          <v-btn icon="mdi-dots-horizontal" v-bind="props" flat></v-btn>
+        </template>
+
+        <v-list>
+          <v-list-item @click="emits('open')">Details</v-list-item>
+          <v-list-item @click="emits('unmap')">Unmap</v-list-item>
+        </v-list>
+      </v-menu>
     </td>
   </tr>
 </template>

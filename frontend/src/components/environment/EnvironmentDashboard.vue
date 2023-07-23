@@ -1,19 +1,21 @@
 <script setup lang="ts">
 import environmentApi from '@/api/environment';
 import EnvironmentVariableForm from '@/components/environment/EnvironmentVariableForm.vue';
+import useApiCall from '@/composables/useApiCall';
 import useApplicationContext from '@/composables/useApplicationContext';
 import useFilterData from '@/composables/useFilterData';
-import useLoadData from '@/composables/useLoadData';
 import { EnvironmentVariableInput } from '@/models/environment';
 import { computed, ref, unref, watch } from 'vue';
 
 const context = useApplicationContext();
 const application = computed(() => context.application.value);
 
-const { data, error, loadData, resetData } = useLoadData(
-  () => environmentApi.getForApplication(context.guid.value),
-  context.loading,
-);
+const {
+  data,
+  error,
+  execute: loadData,
+  reset: resetData,
+} = useApiCall(() => environmentApi.getForApplication(context.guid.value), context.loading);
 loadData();
 
 context.on('reload', () => {
@@ -48,7 +50,7 @@ const openVariableFormDialog = (value?: EnvironmentVariableInput) => {
   }
   variableFormDialog.value = true;
 };
-const onVariableFormSubmit = async (newValue: EnvironmentVariableInput) => {
+const handleVariableFormSubmit = async (newValue: EnvironmentVariableInput) => {
   const { guid: appGuid } = unref(application);
   await environmentApi.setVariableForApplication(appGuid, newValue);
   variableFormDialog.value = false;
@@ -56,7 +58,7 @@ const onVariableFormSubmit = async (newValue: EnvironmentVariableInput) => {
 };
 
 const deletingVariableKey = ref<string>();
-const onVariableDeleteSubmit = async () => {
+const handleVariableDeleteSubmit = async () => {
   const { guid: appGuid } = unref(application);
   if (deletingVariableKey.value) {
     await environmentApi.unsetVariableForApplication(appGuid, deletingVariableKey.value);
@@ -69,7 +71,7 @@ const onVariableDeleteSubmit = async () => {
 <template>
   <v-row class="flex-column" v-if="data">
     <v-dialog v-model="variableFormDialog" width="500">
-      <environment-variable-form :initial-input="editingVariable" @submit="onVariableFormSubmit">
+      <environment-variable-form :initial-input="editingVariable" @submit="handleVariableFormSubmit">
       </environment-variable-form>
     </v-dialog>
 
@@ -78,7 +80,7 @@ const onVariableDeleteSubmit = async () => {
         <v-card-text>Supprimer la variable `{{ deletingVariableKey }}` ?</v-card-text>
 
         <v-card-actions>
-          <v-btn color="danger" @click="onVariableDeleteSubmit">Oui</v-btn>
+          <v-btn color="danger" @click="handleVariableDeleteSubmit">Oui</v-btn>
           <v-btn color="secondary" @click="deletingVariableKey = undefined">Non</v-btn>
         </v-card-actions>
       </v-card>

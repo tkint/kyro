@@ -80,12 +80,12 @@ export const handleApiCall = async <TData, TError = ApiErrorResponse>(
   if (response.ok) {
     return {
       success: true,
-      data: await response.json(),
+      data: await response.json().catch(() => undefined),
     };
   } else {
     return {
       success: false,
-      error: await response.json(),
+      error: await response.json().catch(() => undefined),
     };
   }
 };

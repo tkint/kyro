@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import { computed } from 'vue';
 import ApplicationInstanceItem from '@/components/application/ApplicationInstanceItem.vue';
 import { CFApplication } from '@/models/cf/application';
-import { CFProcessState, PaginatedProcessStats } from '@/models/cf/process';
+import { CFProcessState, ProcessStatsResources } from '@/models/cf/process';
+import { computed } from 'vue';
 
 const props = defineProps<{
   application: CFApplication;
-  processes: PaginatedProcessStats;
+  processes: ProcessStatsResources;
 }>();
 
 const values = computed(() => {

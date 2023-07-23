@@ -2,7 +2,7 @@
 import organizationApi from '@/api/organization';
 import ApiErrorAlert from '@/components/ApiErrorAlert.vue';
 import Organization from '@/components/organization/Organization.vue';
-import useLoadData from '@/composables/useLoadData';
+import useApiCall from '@/composables/useApiCall';
 import { onCachedActivated } from '@/hooks';
 import { CFOrganization } from '@/models/cf/organization';
 
@@ -10,7 +10,13 @@ const props = defineProps<{
   guid: CFOrganization['guid'];
 }>();
 
-const { response, loadData, error, loading, resetData } = useLoadData(() => organizationApi.getOne(props.guid));
+const {
+  result,
+  execute: loadData,
+  error,
+  loading,
+  reset: resetData,
+} = useApiCall(() => organizationApi.getOne(props.guid));
 
 onCachedActivated(
   () => props.guid,
@@ -33,9 +39,9 @@ onCachedActivated(
       </v-col>
     </v-row>
 
-    <v-row v-if="response?.success">
+    <v-row v-if="result?.success">
       <v-col>
-        <organization :organization="response.data"></organization>
+        <organization :organization="result.data"></organization>
       </v-col>
     </v-row>
   </v-container>

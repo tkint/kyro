@@ -1,6 +1,6 @@
 import { ApiErrorResponse } from '@/api';
 import organizationApi from '@/api/organization';
-import { useLoadPaginatedData } from '@/composables/useLoadData';
+import { usePaginatedApiCall } from '@/composables/useApiCall';
 import { CFOrganization, PaginatedOrganizations } from '@/models/cf/organization';
 import { Result } from '@/utils/result';
 import { defineStore } from 'pinia';
@@ -13,7 +13,7 @@ type OrganizationState = {
   };
 };
 
-const { loadData } = useLoadPaginatedData((page) =>
+const { execute: loadData } = usePaginatedApiCall((page) =>
   organizationApi.getAll({
     page: page,
     perPage: 50,

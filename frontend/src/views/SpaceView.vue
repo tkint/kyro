@@ -2,7 +2,7 @@
 import spaceApi from '@/api/space';
 import ApiErrorAlert from '@/components/ApiErrorAlert.vue';
 import Space from '@/components/space/Space.vue';
-import useLoadData from '@/composables/useLoadData';
+import useApiCall from '@/composables/useApiCall';
 import { onCachedActivated } from '@/hooks';
 import { CFSpace } from '@/models/cf/space';
 
@@ -10,7 +10,7 @@ const props = defineProps<{
   guid: CFSpace['guid'];
 }>();
 
-const { response, loadData, error, loading, resetData } = useLoadData(() => spaceApi.getOne(props.guid));
+const { result, execute: loadData, error, loading, reset: resetData } = useApiCall(() => spaceApi.getOne(props.guid));
 
 onCachedActivated(
   () => props.guid,
@@ -33,9 +33,9 @@ onCachedActivated(
       </v-col>
     </v-row>
 
-    <v-row v-if="response?.success">
+    <v-row v-if="result?.success">
       <v-col>
-        <space :space="response.data"></space>
+        <space :space="result.data"></space>
       </v-col>
     </v-row>
   </v-container>

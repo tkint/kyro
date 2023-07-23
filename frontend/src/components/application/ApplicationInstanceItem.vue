@@ -42,7 +42,7 @@ const stats = computed<Partial<Record<StatKey, StatUI>>>(() => {
     },
   };
 
-  return mapValues(result, (stat, key) => {
+  return mapValues(result, (stat) => {
     const percentageValue = percentage(stat.value, stat.quota);
 
     const statUI: StatUI = {
@@ -52,7 +52,7 @@ const stats = computed<Partial<Record<StatKey, StatUI>>>(() => {
       color: percentageValue > 90 ? 'error' : percentageValue > 80 ? 'warning' : 'success',
     };
 
-    return [key, statUI];
+    return statUI;
   });
 });
 </script>

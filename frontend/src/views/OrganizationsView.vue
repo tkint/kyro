@@ -3,15 +3,20 @@ import organizationApi from '@/api/organization';
 import organizationQuotaApi from '@/api/organizationQuota';
 import ApiErrorAlert from '@/components/ApiErrorAlert.vue';
 import OrganizationItem from '@/components/organization/OrganizationItem.vue';
+import { usePaginatedApiCall } from '@/composables/useApiCall';
 import useFilterData from '@/composables/useFilterData';
-import { useLoadPaginatedData } from '@/composables/useLoadData';
 import usePagination from '@/composables/usePagination';
 import { mapResources } from '@/models/cf/common';
 import { onSuccess, successOf } from '@/utils/result';
 import { filter, map } from 'lodash';
 import { onActivated } from 'vue';
 
-const { data, response, loadData, loading } = useLoadPaginatedData(async (page) => {
+const {
+  data,
+  result,
+  execute: loadData,
+  loading,
+} = usePaginatedApiCall(async (page) => {
   const result = await organizationApi
     .getAll({ page })
     .then((result) =>
@@ -49,10 +54,10 @@ onActivated(loadData);
   <v-container fluid>
     <v-progress-linear indeterminate :color="loading ? 'primary' : 'transparent'" class="mb-1"></v-progress-linear>
 
-    <template v-if="response">
-      <v-row v-if="!response.success">
+    <template v-if="result">
+      <v-row v-if="!result.success">
         <v-col>
-          <api-error-alert :error="response.error"></api-error-alert>
+          <api-error-alert :error="result.error"></api-error-alert>
         </v-col>
       </v-row>
 
@@ -69,7 +74,7 @@ onActivated(loadData);
             </v-btn>
           </v-col>
 
-          <v-col cols="auto">{{ filteredData.length }}/{{ response.data.resources.length }}</v-col>
+          <v-col cols="auto">{{ filteredData.length }}/{{ result.data.resources.length }}</v-col>
         </v-row>
 
         <template v-if="paginatedData.length > 0">
@@ -86,7 +91,9 @@ onActivated(loadData);
           </v-row>
         </template>
 
-        <v-alert color="warning" variant="outlined" icon="$warning" v-else-if="!loading">No organization found</v-alert>
+        <v-alert class="mt-2" color="warning" variant="outlined" icon="$warning" v-else-if="!loading">
+          No organization found
+        </v-alert>
       </template>
     </template>
   </v-container>

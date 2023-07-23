@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { DeepReadonly } from 'vue';
 import { ApiErrorResponse } from '@/api';
+import { DeepReadonly } from 'vue';
 
 defineProps<{
   error: ApiErrorResponse | DeepReadonly<ApiErrorResponse>;

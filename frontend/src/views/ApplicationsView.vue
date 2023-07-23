@@ -2,61 +2,68 @@
 import applicationApi from '@/api/application';
 import ApiErrorAlert from '@/components/ApiErrorAlert.vue';
 import ApplicationItem from '@/components/application/ApplicationItem.vue';
+import { usePaginatedApiCall } from '@/composables/useApiCall';
 import useFilterData from '@/composables/useFilterData';
-import { useLoadPaginatedData } from '@/composables/useLoadData';
 import usePagination from '@/composables/usePagination';
-import { CFInclude } from '@/models/cf/common';
+import { CFInclude, mapResources } from '@/models/cf/common';
 import { CFOrganization } from '@/models/cf/organization';
 import { CFSpace } from '@/models/cf/space';
+import { flatOnSuccess } from '@/utils/result';
 import { map, sortBy } from 'lodash';
 import { computed, onActivated, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 const { t } = useI18n();
 
-const { data, response, loadData, loading } = useLoadPaginatedData((page: number) =>
-  applicationApi.getAll({
-    includes: [CFInclude.SPACE, CFInclude.SPACE_ORGANIZATION],
-    page: page,
-    perPage: 20,
-  }),
+const {
+  data: applications,
+  result,
+  execute: loadApplications,
+  loading,
+} = usePaginatedApiCall((page: number) =>
+  applicationApi
+    .getAll({
+      includes: [CFInclude.SPACE, CFInclude.SPACE_ORGANIZATION],
+      page: page,
+      perPage: 20,
+    })
+    .then((result) =>
+      flatOnSuccess(result, (data) => {
+        const { included } = data;
+
+        return mapResources(data, (application) => {
+          const space = included?.spaces?.find(({ guid }) => guid === application.relationships.space.data.guid);
+          const organization =
+            space && included?.organizations?.find(({ guid }) => guid === space.relationships.organization.data.guid);
+
+          return {
+            ...application,
+            space: space && {
+              name: space.name,
+              guid: space.guid,
+            },
+            organization: organization && {
+              name: organization.name,
+              guid: organization.guid,
+            },
+          };
+        });
+      }),
+    ),
 );
 
-onActivated(loadData);
-
-const applications = computed(() => {
-  if (!data.value) return [];
-
-  const { resources, included } = data.value;
-
-  return resources.map((application) => {
-    const space = included?.spaces?.find(({ guid }) => guid === application.relationships.space.data.guid);
-    const organization =
-      space && included?.organizations?.find(({ guid }) => guid === space.relationships.organization.data.guid);
-    return {
-      ...application,
-      space: space && {
-        name: space.name,
-        guid: space.guid,
-      },
-      organization: organization && {
-        name: organization.name,
-        guid: organization.guid,
-      },
-    };
-  });
-});
+onActivated(loadApplications);
 
 const organizationFilter = ref<CFOrganization['guid']>();
-const organizations = computed(() => sortBy(data.value?.included?.organizations, (item) => item.name));
+const organizations = computed(() => sortBy(applications.value?.included?.organizations, (item) => item.name));
 
 const spaceFilter = ref<CFSpace['guid']>();
 const spaces = computed(() => {
-  if (!data.value?.included?.spaces) {
+  if (!applications.value?.included?.spaces) {
     return [];
   }
 
-  const filteredSpaces = data.value.included.spaces?.filter((space) => {
+  const filteredSpaces = applications.value.included.spaces?.filter((space) => {
     const orgFilter = organizationFilter.value;
     return !orgFilter || space.relationships.organization.data.guid === orgFilter;
   });
@@ -91,7 +98,7 @@ const { filters, data: filteredApplications } = useFilterData((filters, { includ
   const organization = organizationFilter.value;
   const space = spaceFilter.value;
 
-  return applications.value.filter((application) => {
+  return applications.value?.resources.filter((application) => {
     return (
       (!organization || application.organization?.guid === organization) &&
       (!space || application.space?.guid === space) &&
@@ -107,9 +114,9 @@ const { data: paginatedApplications, pagination } = usePagination(filteredApplic
   <v-container fluid>
     <v-progress-linear indeterminate :color="loading ? 'primary' : 'transparent'" class="mb-1"></v-progress-linear>
 
-    <template v-if="response">
-      <v-row v-if="!response.success">
-        <v-col><api-error-alert :error="response.error"></api-error-alert></v-col>
+    <template v-if="result">
+      <v-row v-if="!result.success">
+        <v-col><api-error-alert :error="result.error"></api-error-alert></v-col>
       </v-row>
 
       <template v-else>
@@ -151,12 +158,12 @@ const { data: paginatedApplications, pagination } = usePagination(filteredApplic
           </v-col>
 
           <v-col cols="auto">
-            <v-btn variant="text" @click="loadData" size="large">
+            <v-btn variant="text" @click="loadApplications" size="large">
               <v-icon>mdi-cached</v-icon>
             </v-btn>
           </v-col>
 
-          <v-col cols="auto">{{ filteredApplications.length }}/{{ applications.length }}</v-col>
+          <v-col cols="auto">{{ filteredApplications.length }}/{{ applications?.resources.length }}</v-col>
         </v-row>
 
         <template v-if="paginatedApplications.length > 0">
@@ -173,7 +180,9 @@ const { data: paginatedApplications, pagination } = usePagination(filteredApplic
           </v-row>
         </template>
 
-        <v-alert color="warning" variant="outlined" icon="$warning" v-else-if="!loading">No application found</v-alert>
+        <v-alert class="mt-2" color="warning" variant="outlined" icon="$warning" v-else-if="!loading">
+          No application found
+        </v-alert>
       </template>
     </template>
   </v-container>
