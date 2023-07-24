@@ -42,6 +42,8 @@ export interface CFResource {
   links: Record<string, CFLink>;
 }
 
+export type CFSortedBy<T extends string> = T | `-${T}`
+
 export interface CFResourceWithRelationShips extends CFResource {
   relationships: Record<string, CFRelationship>;
   included?: Record<string, CFResource[]>;

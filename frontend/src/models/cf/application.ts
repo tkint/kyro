@@ -1,4 +1,5 @@
 import { CFLink, CFMetaData, CFPaginated, CFResourceWithRelationShips, CFToOneRelationship } from '@/models/cf/common';
+import { CFLifecycle } from '@/models/cf/lifecycle';
 import { CFOrganization } from '@/models/cf/organization';
 import { CFSpace } from '@/models/cf/space';
 
@@ -10,7 +11,7 @@ export enum CFApplicationState {
 export interface CFApplication extends CFResourceWithRelationShips {
   name: string;
   state: CFApplicationState;
-  lifecycle: CFApplication.Lifecycle;
+  lifecycle: CFLifecycle;
   relationships: {
     space: CFToOneRelationship;
   };
@@ -37,17 +38,3 @@ export interface CFApplication extends CFResourceWithRelationShips {
 }
 
 export type PaginatedApplications = CFPaginated<CFApplication, { spaces: CFSpace[]; organizations: CFOrganization[] }>;
-
-export namespace CFApplication {
-  export interface Lifecycle {
-    type: string;
-    data: Lifecycle.Data;
-  }
-
-  export namespace Lifecycle {
-    export interface Data {
-      buildpacks: string[];
-      stack: string;
-    }
-  }
-}

@@ -41,4 +41,25 @@ export default {
       'A implémenter. Voir : https://v3-apidocs.cloudfoundry.org/version/3.122.0/index.html#deprecated-endpoints',
     );
   },
+  start: async (guid: CFApplication['guid']) => {
+    return handleApiCall({
+      path: `/v3/apps/${guid}/actions/start`,
+      method: 'POST',
+      authorization: useAuthStore().getAuthorization,
+    });
+  },
+  stop: async (guid: CFApplication['guid']) => {
+    return handleApiCall({
+      path: `/v3/apps/${guid}/actions/stop`,
+      method: 'POST',
+      authorization: useAuthStore().getAuthorization,
+    });
+  },
+  restart: async (guid: CFApplication['guid']) => {
+    return handleApiCall({
+      path: `/v3/apps/${guid}/actions/restart`,
+      method: 'POST',
+      authorization: useAuthStore().getAuthorization,
+    });
+  },
 };

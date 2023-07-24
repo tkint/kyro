@@ -1,13 +1,18 @@
 <script setup lang="ts">
 import { ApiErrorResponse, compactErrors } from '@/api';
-import applicationsApi from '@/api/application';
+import applicationApi from '@/api/application';
 import ApiErrorAlert from '@/components/ApiErrorAlert.vue';
+import RestageButton from '@/components/application/action/RestageButton.vue';
+import RestartButton from '@/components/application/action/RestartButton.vue';
+import StartButton from '@/components/application/action/StartButton.vue';
+import StopButton from '@/components/application/action/StopButton.vue';
 import useApiCall from '@/composables/useApiCall';
 import { provideApplicationContext } from '@/composables/useApplicationContext';
 import { RouteNames } from '@/core/router';
 import { onCachedActivated } from '@/hooks';
 import { CFApplication } from '@/models/cf/application';
 import { CFInclude } from '@/models/cf/common';
+import { watch } from 'vue';
 import { computed, ref } from 'vue';
 
 const props = defineProps<{
@@ -22,7 +27,7 @@ const {
   execute: loadApplication,
   reset: resetApplication,
 } = useApiCall(
-  () => applicationsApi.getOne(props.guid, { includes: [CFInclude.SPACE, CFInclude.SPACE_ORGANIZATION] }),
+  () => applicationApi.getOne(props.guid, { includes: [CFInclude.SPACE, CFInclude.SPACE_ORGANIZATION] }),
   loading,
 );
 
@@ -43,7 +48,7 @@ const compactedErrors = computed<ApiErrorResponse | undefined>(() =>
 const executeAction = async (action: 'start' | 'stop' | 'restart') => {
   if (application.value) {
     loading.value = true;
-    await applicationsApi.executeAction(application.value.guid, action);
+    await applicationApi.executeAction(application.value.guid, action);
     loading.value = false;
   }
 };
@@ -59,6 +64,27 @@ const { trigger } = provideApplicationContext({
   errors,
   application: computed(() => application.value),
 });
+
+const refRestageButton = ref<{ loading: boolean; state: State }>();
+
+type State = 'nothing' | 'loading' | 'complete';
+
+type States = {
+  restaging: State;
+};
+
+const states = computed<States>(() => ({
+  restaging: refRestageButton.value?.state ?? 'nothing',
+}));
+
+watch(
+  () => states.value.restaging,
+  (newValue, oldValue) => {
+    if (newValue === 'complete' && oldValue === 'loading') {
+      console.log('aaaa');
+    }
+  },
+);
 </script>
 
 <template>
@@ -71,32 +97,32 @@ const { trigger } = provideApplicationContext({
       </v-col>
     </v-row>
 
+    <v-row v-if="states.restaging === 'loading'">
+      <v-col>
+        <v-alert density="compact" type="info">
+          <v-alert-title>Restage en cours</v-alert-title>
+          Rester sur la page pour que le processus se complète
+        </v-alert>
+      </v-col>
+    </v-row>
+
     <v-card v-if="application" flat>
       <v-toolbar density="compact">
         <v-toolbar-title class="v-col-auto">
           {{ application.name }}
+
+          {{ states }}
         </v-toolbar-title>
 
         <v-btn-group variant="text">
-          <v-btn :disabled="application.state === 'STARTED'" @click="executeAction('start')">
-            <v-icon>mdi-play-outline</v-icon>
-            <v-tooltip activator="parent" location="bottom">Start</v-tooltip>
-          </v-btn>
+          <start-button :application="application" :disabled="application.state === 'STARTED'"></start-button>
 
-          <v-btn :disabled="application.state === 'STOPPED'" @click="executeAction('stop')">
-            <v-icon>mdi-square-outline</v-icon>
-            <v-tooltip activator="parent" location="bottom">Stop</v-tooltip>
-          </v-btn>
+          <stop-button :application="application" :disabled="application.state === 'STOPPED'"></stop-button>
 
-          <v-btn :disabled="application.state === 'STOPPED'" @click="executeAction('restart')">
-            <v-icon>mdi-reload</v-icon>
-            <v-tooltip activator="parent" location="bottom">Restart</v-tooltip>
-          </v-btn>
+          <restart-button :application="application" :disabled="application.state === 'STOPPED'"></restart-button>
 
-          <v-btn>
-            <v-icon>mdi-archive-refresh-outline</v-icon>
-            <v-tooltip activator="parent" location="bottom">Restage</v-tooltip>
-          </v-btn>
+          <restage-button ref="refRestageButton" :application="application" :disabled="application.state === 'STOPPED'">
+          </restage-button>
 
           <v-btn>
             <v-icon>mdi-delete-outline</v-icon>
