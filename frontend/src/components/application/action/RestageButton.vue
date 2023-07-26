@@ -9,33 +9,39 @@ import { useLoadingFn } from '@/composables/useLoadingFn';
 import { CFApplication } from '@/models/cf/application';
 import { CFPackage } from '@/models/cf/package';
 import { waitUntil } from '@/utils/common';
+import { matchesOneOf } from '@/utils/string';
 import { computed, readonly, ref, watch } from 'vue';
 
 const props = defineProps<{
   application: CFApplication;
   state: ApplicationState;
+  disabled?: boolean;
 }>();
 
-const loading = ref(props.state.state === 'building' || props.state.state === 'deprecated-droplet');
-const disabled = computed(
+const emits = defineEmits<{
+  (e: 'launched'): void;
+  (e: 'completed'): void;
+}>();
+
+const loading = ref(matchesOneOf(props.state.state, 'building', 'deprecated-droplet'));
+const isDisabled = computed(
   () =>
-    !loading.value &&
-    (props.state.state === 'unknown' ||
-      props.state.state === 'building' ||
-      props.state.state === 'deprecated-droplet' ||
-      props.state.state === 'starting'),
+    props.disabled ||
+    (!loading.value && matchesOneOf(props.state.state, 'unknown', 'building', 'deprecated-droplet', 'starting')),
 );
 
 watch(
   () => props.state,
   (newValue) => {
-    if (newValue.state === 'building' || newValue.state === 'deprecated-droplet') {
+    if (matchesOneOf(newValue.state, 'building', 'deprecated-droplet')) {
       loading.value = true;
     }
   },
 );
 
 const { fn: launchNewBuild } = useLoadingFn(async () => {
+  emits('launched');
+
   const packagesResult = await loadPaginatedData((page) =>
     packageApi.listForApplication(props.application.guid, { page }),
   );
@@ -54,12 +60,16 @@ const { fn: completeRestage } = useLoadingFn(async () => {
   const currentState = props.state;
 
   if (currentState.state === 'deprecated-droplet') {
+    emits('launched');
+
     await applicationApi.stop(props.application.guid);
     await dropletApi.updateApplicationDroplet(props.application.guid, { dropletGuid: currentState.dropletGuid });
     await applicationApi.start(props.application.guid);
 
     await waitUntil(() => props.state.state === 'started');
   }
+
+  emits('completed');
 }, loading);
 
 const { fn: launchRestage } = useLoadingFn(async () => {
@@ -86,7 +96,7 @@ defineExpose({
 </script>
 
 <template>
-  <v-btn @click="launchRestage" :loading="loading" :disabled="disabled">
+  <v-btn @click="launchRestage" :loading="loading" :disabled="isDisabled">
     <v-icon>mdi-archive-refresh-outline</v-icon>
     <v-tooltip activator="parent" location="bottom">Restage</v-tooltip>
   </v-btn>

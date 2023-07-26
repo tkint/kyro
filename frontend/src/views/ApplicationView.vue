@@ -13,6 +13,9 @@ import { RouteNames } from '@/core/router';
 import { onCachedActivated } from '@/hooks';
 import { CFApplication } from '@/models/cf/application';
 import { CFInclude } from '@/models/cf/common';
+import { waitUntil } from '@/utils/common';
+import { matchesOneOf } from '@/utils/string';
+import { onMounted } from 'vue';
 import { computed, onDeactivated, ref } from 'vue';
 
 const props = defineProps<{
@@ -20,6 +23,14 @@ const props = defineProps<{
 }>();
 
 const loading = ref(false);
+
+type Action = 'start' | 'stop' | 'restart' | 'restage';
+
+const currentAction = ref<Action>();
+const handleLaunchAction = (action: Action) => {
+  currentAction.value = action;
+  stateWatcher.start({ eager: true });
+};
 
 const {
   data: application,
@@ -34,6 +45,17 @@ const {
 const { watchState } = useApplicationState();
 const { state, ...stateWatcher } = watchState({ guid: props.guid });
 
+const polling = computed({
+  get: () => stateWatcher.active.value,
+  set: (newValue) => {
+    if (newValue) {
+      stateWatcher.start();
+    } else {
+      stateWatcher.stop();
+    }
+  },
+});
+
 const loadAllData = async (reset: boolean = false) => {
   if (reset) {
     resetApplication();
@@ -42,7 +64,18 @@ const loadAllData = async (reset: boolean = false) => {
   }
   loadApplication();
   trigger('reload');
-  stateWatcher.start({ resetState: reset, eager: true });
+  if (reset) {
+    stateWatcher.start({ resetState: false, eager: true });
+  } else {
+    await stateWatcher.refresh();
+    if (matchesOneOf(state.value.state, 'starting', 'building', 'deprecated-droplet')) {
+      stateWatcher.start();
+
+      await waitUntil(() => matchesOneOf(state.value.state, 'started', 'stopped', 'unknown'));
+
+      stateWatcher.stop();
+    }
+  }
 };
 
 const errors = ref<ApiErrorResponse[]>([]);
@@ -99,13 +132,38 @@ const restaging = computed(() => !!refRestageButton.value?.loading);
         </v-toolbar-title>
 
         <v-btn-group variant="text">
-          <start-button :application="application" :state="state"></start-button>
+          <start-button
+            :application="application"
+            :state="state"
+            :disabled="currentAction && currentAction !== 'start'"
+            @launched="handleLaunchAction('start')"
+            @completed="currentAction = undefined">
+          </start-button>
 
-          <stop-button :application="application" :state="state"></stop-button>
+          <stop-button
+            :application="application"
+            :state="state"
+            :disabled="currentAction && currentAction !== 'stop'"
+            @launched="handleLaunchAction('stop')"
+            @completed="currentAction = undefined">
+          </stop-button>
 
-          <restart-button :application="application" :state="state"></restart-button>
+          <restart-button
+            :application="application"
+            :state="state"
+            :disabled="currentAction && currentAction !== 'restart'"
+            @launched="handleLaunchAction('restart')"
+            @completed="currentAction = undefined">
+          </restart-button>
 
-          <restage-button ref="refRestageButton" :application="application" :state="state"></restage-button>
+          <restage-button
+            ref="refRestageButton"
+            :application="application"
+            :state="state"
+            :disabled="currentAction && currentAction !== 'restage'"
+            @launched="handleLaunchAction('restage')"
+            @completed="currentAction = undefined">
+          </restage-button>
 
           <v-btn disabled>
             <v-icon>mdi-delete-outline</v-icon>
@@ -119,6 +177,13 @@ const restaging = computed(() => !!refRestageButton.value?.loading);
           <v-icon>mdi-cached</v-icon>
           <v-tooltip activator="parent" location="bottom">Reload</v-tooltip>
         </v-btn>
+
+        <v-checkbox-btn
+          v-model="polling"
+          label="Polling"
+          inline
+          class="me-4"
+          :disabled="!!currentAction || state.state === 'starting'"></v-checkbox-btn>
       </v-toolbar>
 
       <v-navigation-drawer order="2">

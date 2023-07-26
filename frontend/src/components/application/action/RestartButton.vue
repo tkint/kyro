@@ -9,20 +9,30 @@ import { computed, ref } from 'vue';
 const props = defineProps<{
   application: CFApplication;
   state: ApplicationState;
+  disabled?: boolean;
+}>();
+
+const emits = defineEmits<{
+  (e: 'launched'): void;
+  (e: 'completed'): void;
 }>();
 
 const loading = ref(false);
-const disabled = computed(() => !loading.value && props.state.state !== 'started');
+const isDisabled = computed(() => props.disabled || (!loading.value && props.state.state !== 'started'));
 
 const { fn: launchRestart } = useLoadingFn(async () => {
+  emits('launched');
+
   await applicationApi.restart(props.application.guid);
 
   await waitUntil(() => props.state.state === 'started');
+
+  emits('completed');
 }, loading);
 </script>
 
 <template>
-  <v-btn @click="launchRestart" :loading="loading" :disabled="disabled">
+  <v-btn @click="launchRestart" :loading="loading" :disabled="isDisabled">
     <v-icon>mdi-reload</v-icon>
     <v-tooltip activator="parent" location="bottom">Restart</v-tooltip>
   </v-btn>

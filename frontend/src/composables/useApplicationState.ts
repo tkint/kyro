@@ -6,9 +6,9 @@ import processApi from '@/api/process';
 import { CFApplication, CFApplicationState } from '@/models/cf/application';
 import { CFBuild } from '@/models/cf/build';
 import { CFDroplet } from '@/models/cf/droplet';
-import { CFProcess, CFProcessState, ProcessStatsResources } from '@/models/cf/process';
+import { CFProcessState, ProcessStatsResources } from '@/models/cf/process';
 import { Result } from '@/utils/result';
-import { readonly, ref, unref } from 'vue';
+import { computed, ref, unref } from 'vue';
 
 export type ApplicationState =
   | {
@@ -122,13 +122,19 @@ export default () => {
         refreshState(guid);
       }
 
-      watcher.value = setInterval(() => refreshState(guid), interval);
+      watcher.value = setInterval(() => {
+        refreshState(guid);
+      }, interval);
     };
 
-    const stop = () => clearInterval(watcher.value);
+    const stop = () => {
+      clearInterval(watcher.value);
+      watcher.value = undefined;
+    };
 
     return {
       state,
+      active: computed(() => watcher.value !== undefined),
       start,
       stop,
       reset: () => (state.value = initialState),
