@@ -16,12 +16,6 @@ const emits = defineEmits<{
 
     <v-spacer></v-spacer>
 
-    <locale-picker>
-      <template v-slot:activator="{ props, options }">
-        <v-btn v-bind="props" flat>
-          <component :is="options.flag" style="width: 23px"></component>
-        </v-btn>
-      </template>
-    </locale-picker>
+    <locale-picker></locale-picker>
   </v-app-bar>
 </template>

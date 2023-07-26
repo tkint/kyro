@@ -1,21 +1,23 @@
 <script setup lang="ts">
 import applicationApi from '@/api/application';
+import { ApplicationState } from '@/composables/useApplicationState';
 import useLoadingFn from '@/composables/useLoadingFn';
 import { CFApplication } from '@/models/cf/application';
-import { ref } from 'vue';
+import { waitUntil } from '@/utils/common';
+import { computed, ref } from 'vue';
 
 const props = defineProps<{
   application: CFApplication;
-  disabled?: boolean;
+  state: ApplicationState;
 }>();
 
 const loading = ref(false);
+const disabled = computed(() => !loading.value && props.state.state !== 'started');
 
 const { fn: launchStop } = useLoadingFn(async () => {
-  const result = await applicationApi.stop(props.application.guid);
+  await applicationApi.stop(props.application.guid);
 
-  if (result.success) {
-  }
+  await waitUntil(() => props.state.state === 'stopped');
 }, loading);
 </script>
 

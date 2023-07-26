@@ -6,6 +6,7 @@ import { VMenu } from 'vuetify/lib/components/index.mjs';
 
 defineProps<{
   location?: VMenu['location'];
+  label?: boolean;
 }>();
 
 const { locale } = useI18n();
@@ -24,7 +25,7 @@ const currentLocale = computed<LocaleKey>({
       <slot name="activator" :props="props" :options="localeOptions[currentLocale]">
         <v-btn v-bind="props" flat>
           <component :is="localeOptions[currentLocale].flag" style="width: 23px"></component>
-          <span class="ms-2">{{ localeOptions[currentLocale].name }}</span>
+          <span v-if="label" class="ms-2">{{ localeOptions[currentLocale].name }}</span>
         </v-btn>
       </slot>
     </template>

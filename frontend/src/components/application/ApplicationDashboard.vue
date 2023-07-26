@@ -16,8 +16,21 @@ const {
   data: processes,
   error: processesError,
   execute: loadProcesses,
-  reset: resetProcesses,
-} = useApiCall(() => processApi.getStatsForApplication(context.guid.value, 'web'), context.loading);
+} = useApiCall(async () => {
+  const state = context.state.value;
+
+  if ('processes' in state) return state.processes;
+
+  return processApi.getStatsForApplication(context.guid.value, 'web');
+}, context.loading);
+
+watch(
+  () => context.state.value,
+  () => {
+    loadProcesses();
+  },
+  { deep: true },
+);
 
 const {
   data: sshEnabled,
@@ -30,11 +43,9 @@ loadProcesses();
 loadSSHEnabled();
 
 context.on('reload', () => {
-  loadProcesses();
   loadSSHEnabled();
 });
 context.on('reset', () => {
-  resetProcesses();
   resetSSHEnabled();
 });
 
@@ -50,7 +61,7 @@ watch([processesError, sshEnabledError], (newValue) => {
 <template>
   <v-row class="">
     <v-col>
-      <application-card :application="application"></application-card>
+      <application-card :application="application" :state="context.state.value"></application-card>
     </v-col>
 
     <v-col>

@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import CopyableText from '@/components/shared/CopyableText.vue';
+import { ApplicationState } from '@/composables/useApplicationState';
 import { RouteNames } from '@/core/router';
 import { CFApplication } from '@/models/cf/application';
 import dayjs from 'dayjs';
 
 const props = defineProps<{
   application: CFApplication;
+  state: ApplicationState;
 }>();
 </script>
 
@@ -17,7 +19,7 @@ const props = defineProps<{
       <v-row>
         <v-col>
           <div>Etat</div>
-          <div>{{ application.state }}</div>
+          <div>{{ state.state }}</div>
         </v-col>
 
         <v-col>

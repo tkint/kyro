@@ -30,4 +30,21 @@ export default {
       authorization: useAuthStore().getAuthorization,
     });
   },
+  updateApplicationDroplet: async (
+    guid: CFApplication['guid'],
+    input: {
+      dropletGuid: CFDroplet['guid'];
+    },
+  ) => {
+    return handleApiCall({
+      path: `/v3/apps/${guid}/relationships/current_droplet`,
+      method: 'PATCH',
+      body: {
+        data: {
+          guid: input.dropletGuid,
+        },
+      },
+      authorization: useAuthStore().getAuthorization,
+    });
+  },
 };

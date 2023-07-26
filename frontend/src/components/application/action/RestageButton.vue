@@ -1,100 +1,87 @@
 <script setup lang="ts">
+import applicationApi from '@/api/application';
 import buildApi from '@/api/build';
 import dropletApi from '@/api/droplet';
 import packageApi from '@/api/package';
 import { loadPaginatedData } from '@/composables/useApiCall';
-import { useLoadingFn, useLoadingFnWithCheck } from '@/composables/useLoadingFn';
+import { ApplicationState } from '@/composables/useApplicationState';
+import { useLoadingFn } from '@/composables/useLoadingFn';
 import { CFApplication } from '@/models/cf/application';
-import { CFBuild } from '@/models/cf/build';
-import { CFDroplet } from '@/models/cf/droplet';
 import { CFPackage } from '@/models/cf/package';
-import { findLast, last, sortBy } from 'lodash';
-import { readonly, ref, watch } from 'vue';
-
-type State = 'nothing' | 'loading' | 'complete';
+import { waitUntil } from '@/utils/common';
+import { computed, readonly, ref, watch } from 'vue';
 
 const props = defineProps<{
   application: CFApplication;
-  disabled?: boolean;
+  state: ApplicationState;
 }>();
 
-const loading = ref(false);
-const state = ref<State>('nothing');
-
-watch(loading, (newValue) => {
-  if (newValue) {
-    state.value = 'loading';
-  }
-});
-
-const { fn: launchNewBuild, launchPolling } = useLoadingFnWithCheck(
-  async (launchPolling) => {
-    const packagesResult = await loadPaginatedData((page) =>
-      packageApi.listForApplication(props.application.guid, { page }),
-    );
-
-    if (packagesResult.success) {
-      const lastPackage = packagesResult.data.resources.find((p) => p.state === CFPackage.State.READY);
-
-      if (lastPackage) {
-        const newBuild = await buildApi.createForPackage(lastPackage.guid);
-
-        if (newBuild.success) {
-          await launchPolling();
-        }
-      }
-    }
-  },
-  async () => {
-    const builds = await loadPaginatedData((page) =>
-      buildApi.listForApplication(props.application.guid, { states: [CFBuild.State.STAGING], page }),
-    );
-
-    return builds.success && builds.data.resources.length === 0;
-  },
-  3000,
-  loading,
+const loading = ref(props.state.state === 'building' || props.state.state === 'deprecated-droplet');
+const disabled = computed(
+  () =>
+    !loading.value &&
+    (props.state.state === 'unknown' ||
+      props.state.state === 'building' ||
+      props.state.state === 'deprecated-droplet' ||
+      props.state.state === 'starting'),
 );
 
-const { fn: completeRestage } = useLoadingFn(async () => {
-  const [builds, droplets] = await Promise.all([
-    buildApi.listForApplication(props.application.guid, {
-      states: [CFBuild.State.STAGED],
-      page: 1,
-      perPage: 1,
-      orderBy: '-created_at',
-    }),
-    dropletApi.listForApplication(props.application.guid, { current: true }),
-  ]);
+watch(
+  () => props.state,
+  (newValue) => {
+    if (newValue.state === 'building' || newValue.state === 'deprecated-droplet') {
+      loading.value = true;
+    }
+  },
+);
 
-  if (builds.success && droplets.success) {
-    const lastBuild = builds.data.resources[0];
-    const currentDroplet = droplets.data.resources[0];
+const { fn: launchNewBuild } = useLoadingFn(async () => {
+  const packagesResult = await loadPaginatedData((page) =>
+    packageApi.listForApplication(props.application.guid, { page }),
+  );
 
-    if (lastBuild && lastBuild.droplet?.guid !== currentDroplet?.guid) {
-      // Arrêter l'application
-      // Changer le droplet
-      // Redémarrer l'application
-      // await applicationApi.restart(props.application.guid);
+  if (packagesResult.success) {
+    const lastPackage = packagesResult.data.resources.find((p) => p.state === CFPackage.State.READY);
+
+    if (lastPackage) {
+      await buildApi.createForPackage(lastPackage.guid);
+      await waitUntil(() => props.state.state === 'deprecated-droplet');
     }
   }
+}, loading);
 
-  // await applicationApi.restart(props.application.guid);
-  // state.value = 'complete';
+const { fn: completeRestage } = useLoadingFn(async () => {
+  const currentState = props.state;
+
+  if (currentState.state === 'deprecated-droplet') {
+    await applicationApi.stop(props.application.guid);
+    await dropletApi.updateApplicationDroplet(props.application.guid, { dropletGuid: currentState.dropletGuid });
+    await applicationApi.start(props.application.guid);
+
+    await waitUntil(() => props.state.state === 'started');
+  }
 }, loading);
 
 const { fn: launchRestage } = useLoadingFn(async () => {
-  await launchNewBuild();
-  await completeRestage();
+  if (props.state.state === 'started') {
+    await launchNewBuild();
+    // await completeRestage();
+  } else if (props.state.state === 'deprecated-droplet') {
+    await completeRestage();
+  }
 }, loading);
 
-launchPolling().then(() => {
-  completeRestage();
-});
+watch(
+  () => props.state,
+  (newValue) => {
+    if (newValue.state === 'deprecated-droplet') {
+      completeRestage();
+    }
+  },
+);
 
 defineExpose({
   loading: readonly(loading),
-  state: readonly(state),
 });
 </script>
 

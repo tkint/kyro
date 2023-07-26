@@ -8,12 +8,12 @@ import StartButton from '@/components/application/action/StartButton.vue';
 import StopButton from '@/components/application/action/StopButton.vue';
 import useApiCall from '@/composables/useApiCall';
 import { provideApplicationContext } from '@/composables/useApplicationContext';
+import useApplicationState from '@/composables/useApplicationState';
 import { RouteNames } from '@/core/router';
 import { onCachedActivated } from '@/hooks';
 import { CFApplication } from '@/models/cf/application';
 import { CFInclude } from '@/models/cf/common';
-import { watch } from 'vue';
-import { computed, ref } from 'vue';
+import { computed, onDeactivated, ref } from 'vue';
 
 const props = defineProps<{
   guid: CFApplication['guid'];
@@ -31,13 +31,18 @@ const {
   loading,
 );
 
-const loadAllData = (invalidate: boolean = false) => {
-  if (invalidate) {
+const { watchState } = useApplicationState();
+const { state, ...stateWatcher } = watchState({ guid: props.guid });
+
+const loadAllData = async (reset: boolean = false) => {
+  if (reset) {
     resetApplication();
     trigger('reset');
+    stateWatcher.update({ guid: props.guid });
   }
   loadApplication();
   trigger('reload');
+  stateWatcher.start({ resetState: reset, eager: true });
 };
 
 const errors = ref<ApiErrorResponse[]>([]);
@@ -45,46 +50,27 @@ const compactedErrors = computed<ApiErrorResponse | undefined>(() =>
   compactErrors(applicationError.value, ...errors.value),
 );
 
-const executeAction = async (action: 'start' | 'stop' | 'restart') => {
-  if (application.value) {
-    loading.value = true;
-    await applicationApi.executeAction(application.value.guid, action);
-    loading.value = false;
-  }
-};
-
 onCachedActivated(
   () => props.guid,
-  (invalidate) => loadAllData(invalidate),
+  (invalidate) => {
+    loadAllData(invalidate);
+  },
 );
+
+onDeactivated(() => {
+  stateWatcher.stop();
+});
 
 const { trigger } = provideApplicationContext({
   guid: computed(() => props.guid),
+  state,
   loading,
   errors,
   application: computed(() => application.value),
 });
 
-const refRestageButton = ref<{ loading: boolean; state: State }>();
-
-type State = 'nothing' | 'loading' | 'complete';
-
-type States = {
-  restaging: State;
-};
-
-const states = computed<States>(() => ({
-  restaging: refRestageButton.value?.state ?? 'nothing',
-}));
-
-watch(
-  () => states.value.restaging,
-  (newValue, oldValue) => {
-    if (newValue === 'complete' && oldValue === 'loading') {
-      console.log('aaaa');
-    }
-  },
-);
+const refRestageButton = ref<{ loading: boolean }>();
+const restaging = computed(() => !!refRestageButton.value?.loading);
 </script>
 
 <template>
@@ -97,7 +83,7 @@ watch(
       </v-col>
     </v-row>
 
-    <v-row v-if="states.restaging === 'loading'">
+    <v-row v-if="restaging">
       <v-col>
         <v-alert density="compact" type="info">
           <v-alert-title>Restage en cours</v-alert-title>
@@ -110,21 +96,18 @@ watch(
       <v-toolbar density="compact">
         <v-toolbar-title class="v-col-auto">
           {{ application.name }}
-
-          {{ states }}
         </v-toolbar-title>
 
         <v-btn-group variant="text">
-          <start-button :application="application" :disabled="application.state === 'STARTED'"></start-button>
+          <start-button :application="application" :state="state"></start-button>
 
-          <stop-button :application="application" :disabled="application.state === 'STOPPED'"></stop-button>
+          <stop-button :application="application" :state="state"></stop-button>
 
-          <restart-button :application="application" :disabled="application.state === 'STOPPED'"></restart-button>
+          <restart-button :application="application" :state="state"></restart-button>
 
-          <restage-button ref="refRestageButton" :application="application" :disabled="application.state === 'STOPPED'">
-          </restage-button>
+          <restage-button ref="refRestageButton" :application="application" :state="state"></restage-button>
 
-          <v-btn>
+          <v-btn disabled>
             <v-icon>mdi-delete-outline</v-icon>
             <v-tooltip activator="parent" location="bottom">Delete</v-tooltip>
           </v-btn>

@@ -1,4 +1,5 @@
 import { ApiErrorResponse } from '@/api';
+import { ApplicationState } from '@/composables/useApplicationState';
 import useContext from '@/composables/useContext';
 import { CFApplication } from '@/models/cf/application';
 import { ComputedRef, Ref, computed } from 'vue';
@@ -7,6 +8,7 @@ type Event = 'reload' | 'reset';
 
 export interface ApplicationContext {
   guid: ComputedRef<CFApplication['guid']>;
+  state: Readonly<Ref<ApplicationState>>;
   loading: Ref<boolean>;
   errors: Ref<ApiErrorResponse[]>;
   application: ComputedRef<CFApplication | undefined>;
