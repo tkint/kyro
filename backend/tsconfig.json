@@ -2,21 +2,18 @@
   "compilerOptions": {
     "outDir": "dist",
     "target": "ESNext",
-    "useDefineForClassFields": true,
     "module": "ESNext",
-    "lib": ["ESNext", "DOM"],
-    "moduleResolution": "Node",
+    "lib": ["ESNext"],
+    "moduleResolution": "Bundler",
     "strict": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
     "esModuleInterop": true,
-    "noEmit": false,
+    "noEmit": true,
     "noUnusedLocals": false,
     "noUnusedParameters": false,
     "noImplicitReturns": true,
-    "experimentalDecorators": true,
-    "strictPropertyInitialization": false,
     "skipLibCheck": true
   },
-  "include": ["lib", "app.ts"]
+  "include": ["src/*"]
 }

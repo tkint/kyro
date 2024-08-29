@@ -1,6 +1,5 @@
 import axios, { AxiosError } from 'axios';
 import { Server } from 'http';
-import { type } from 'os';
 import { parse as parseUrl } from 'url';
 import { WebSocketServer } from 'ws';
 import { insecureHttpsAgent } from './agent';
@@ -58,10 +57,10 @@ export const loggingMiddleware = (server: Server, logCacheUrl: string) => {
               type: envelope.log
                 ? EnvelopeType.Log
                 : envelope.timer
-                ? EnvelopeType.Timer
-                : envelope.gauge
-                ? EnvelopeType.Gauge
-                : EnvelopeType.None,
+                  ? EnvelopeType.Timer
+                  : envelope.gauge
+                    ? EnvelopeType.Gauge
+                    : EnvelopeType.None,
             };
 
             ws.send(JSON.stringify(typedEnvelope));

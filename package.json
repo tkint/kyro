@@ -2,7 +2,9 @@
   "name": "kyro",
   "scripts": {
     "prebuild": "pnpm -r build && rimraf dist && mkdir dist",
-    "build": "cpy \"backend/dist/**/*.*\" dist && cpy \"frontend/dist/**/*.*\" dist/public"
+    "build": "cpy \"backend/dist/**/*.*\" dist && cpy \"frontend/dist/**/*.*\" dist/public",
+    "dev": "pnpm -r dev",
+    "start": "node dist/app.js"
   },
   "devDependencies": {
     "cpy-cli": "^4.2.0",
