@@ -22,7 +22,7 @@ const memory = computed(() => {
     <v-progress-linear :color="organization.suspended ? 'warning' : 'transparent'" model-value="100">
     </v-progress-linear>
 
-    <v-card-title>{{ organization.name }}</v-card-title>
+    <v-card-title :title="organization.name">{{ organization.name }}</v-card-title>
 
     <v-card-text>
       <v-row class="justify-space-between" dense>

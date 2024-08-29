@@ -19,7 +19,7 @@ defineProps<{
     <v-progress-linear :color="application.state === 'STARTED' ? 'success' : 'warning'" model-value="100">
     </v-progress-linear>
 
-    <v-card-title>{{ application.name }}</v-card-title>
+    <v-card-title :title="application.name">{{ application.name }}</v-card-title>
 
     <v-card-text>
       <v-row class="justify-space-between" dense>
