@@ -4,6 +4,7 @@ import { useAuthStore } from '@/stores/auth';
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { RouteLocationRaw, useRouter } from 'vue-router';
+import { useDisplay } from 'vuetify/lib/framework.mjs';
 
 type MenuItem = {
   label: string;
@@ -11,21 +12,19 @@ type MenuItem = {
   icon: string;
 };
 
-const props = defineProps<{
-  compact: boolean;
-}>();
-
-const emits = defineEmits<{
-  (e: 'update:compact', newValue: boolean): void;
-}>();
+const visible = defineModel<boolean>('visible');
 
 const { t } = useI18n();
 const router = useRouter();
 const authStore = useAuthStore();
 
-const localCompact = computed({
-  get: () => props.compact,
-  set: (newValue) => emits('update:compact', newValue),
+const display = useDisplay();
+
+const compact = computed(() => {
+  if (display.mdAndUp.value) {
+    return !visible.value;
+  }
+  return true;
 });
 
 const menus = computed<MenuItem[]>(() => [
@@ -40,7 +39,7 @@ const logout = () => {
 </script>
 
 <template>
-  <v-navigation-drawer :rail="localCompact" color="grey-lighten-3">
+  <v-navigation-drawer permanent :rail="compact" color="grey-lighten-3" :model-value="visible || display.mdAndUp.value">
     <v-list color="primary" bg-color="transparent">
       <v-tooltip
         location="right"
@@ -49,15 +48,15 @@ const logout = () => {
         :text="menu.label"
         content-class="k-opacity-100">
         <template #activator="{ props }">
-          <v-list-item :to="menu.route" :prepend-icon="menu.icon" v-bind="localCompact ? props : undefined">
-            <template v-if="!localCompact">{{ menu.label }}</template>
+          <v-list-item :to="menu.route" :prepend-icon="menu.icon" v-bind="compact ? props : undefined">
+            <template v-if="!compact">{{ menu.label }}</template>
           </v-list-item>
         </template>
       </v-tooltip>
     </v-list>
 
     <template #append>
-      <v-list color="primary" bg-color="transparent" v-if="localCompact">
+      <v-list color="primary" bg-color="transparent" v-if="compact">
         <v-list-item>
           <v-icon>mdi-account</v-icon>
           <v-tooltip activator="parent" location="right">

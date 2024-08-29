@@ -1,31 +1,25 @@
 <script setup lang="ts">
 import ConfirmCard from '@/components/shared/ConfirmCard.vue';
-import { computed } from 'vue';
 
-const props = defineProps<{
-  modelValue: boolean;
+defineProps<{
   loading?: boolean;
 }>();
 
 const emits = defineEmits<{
-  (e: 'update:modelValue', newValue: boolean): void;
   (e: 'confirm'): void;
   (e: 'cancel'): void;
 }>();
 
-const localValue = computed({
-  get: () => props.modelValue,
-  set: (newValue) => emits('update:modelValue', newValue),
-});
+const modelValue = defineModel<boolean>();
 
 const cancel = () => {
   emits('cancel');
-  localValue.value = false;
+  modelValue.value = false;
 };
 </script>
 
 <template>
-  <v-dialog v-model="localValue" width="500">
+  <v-dialog v-model="modelValue" width="500">
     <confirm-card @confirm="emits('confirm')" @cancel="cancel" :loading="loading">
       <template #text><slot name="text"></slot></template>
     </confirm-card>

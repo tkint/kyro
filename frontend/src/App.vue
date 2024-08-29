@@ -19,14 +19,14 @@ watch(locale, (newValue) => {
   settingsStore.$patch({ locale: newValue as LocaleKey });
 });
 
-const compactDrawer = ref(false);
+const showDrawer = ref(true);
 </script>
 
 <template>
   <v-app>
     <template v-if="authStore.isLogged">
-      <the-header @toggle-drawer="compactDrawer = !compactDrawer"></the-header>
-      <the-drawer v-model:compact="compactDrawer"></the-drawer>
+      <the-header @toggle-drawer="showDrawer = !showDrawer"></the-header>
+      <the-drawer v-model:visible="showDrawer"></the-drawer>
       <v-main>
         <router-view v-slot="{ Component }">
           <keep-alive>
