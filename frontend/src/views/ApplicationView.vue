@@ -15,7 +15,6 @@ import { CFApplication } from '@/models/cf/application';
 import { CFInclude } from '@/models/cf/common';
 import { waitUntil } from '@/utils/common';
 import { matchesOneOf } from '@/utils/string';
-import { onMounted } from 'vue';
 import { computed, onDeactivated, ref } from 'vue';
 
 const props = defineProps<{
@@ -102,7 +101,7 @@ const { trigger } = provideApplicationContext({
   application: computed(() => application.value),
 });
 
-const refRestageButton = ref<{ loading: boolean }>();
+const refRestageButton = ref<InstanceType<typeof RestageButton>>();
 const restaging = computed(() => !!refRestageButton.value?.loading);
 </script>
 
@@ -183,7 +182,8 @@ const restaging = computed(() => !!refRestageButton.value?.loading);
           label="Polling"
           inline
           class="me-4"
-          :disabled="!!currentAction || state.state === 'starting'"></v-checkbox-btn>
+          :disabled="!!currentAction || state.state === 'starting'">
+        </v-checkbox-btn>
       </v-toolbar>
 
       <v-navigation-drawer order="2">

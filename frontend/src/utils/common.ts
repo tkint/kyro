@@ -17,12 +17,23 @@ export const notFalsy = <T>(value: T | Falsy): value is T => {
   return !!value;
 };
 
-export const waitUntil = (fn: () => boolean) =>
-  new Promise((resolve) => {
+export function waitUntil(fn: () => boolean): Promise<'success'>;
+export function waitUntil(fn: () => boolean, timeout: number): Promise<'success' | 'timeout'>;
+export function waitUntil(fn: () => boolean, timeout?: number): Promise<'success' | 'timeout'> {
+  return new Promise((resolve) => {
+    const timeoutId = timeout
+      ? setTimeout(() => {
+          stopWatch();
+          resolve('timeout');
+        }, timeout)
+      : undefined;
+
     const stopWatch = watch(fn, (newValue) => {
       if (newValue) {
-        resolve(undefined);
+        resolve('success');
         stopWatch();
+        clearTimeout(timeoutId);
       }
     });
   });
+}
