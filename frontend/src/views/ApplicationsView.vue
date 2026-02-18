@@ -12,6 +12,7 @@ import { flatOnSuccess } from '@/utils/result';
 import { map, sortBy } from 'lodash';
 import { computed, onActivated, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { useRoute } from 'vue-router';
 
 const { t } = useI18n();
 
@@ -20,6 +21,7 @@ const {
   result,
   execute: loadApplications,
   loading,
+  reset: resetApplications,
 } = usePaginatedApiCall((page: number) =>
   applicationApi
     .getAll({
@@ -52,7 +54,19 @@ const {
     ),
 );
 
-onActivated(loadApplications);
+const route = useRoute();
+const forceReloadApplications = () => {
+  resetApplications();
+  loadApplications();
+};
+
+onActivated(forceReloadApplications);
+watch(
+  () => route.query.refresh,
+  () => {
+    forceReloadApplications();
+  },
+);
 
 const organizationFilter = ref<CFOrganization['guid']>();
 const organizations = computed(() => sortBy(applications.value?.included?.organizations, (item) => item.name));
@@ -108,6 +122,60 @@ const { filters, data: filteredApplications } = useFilterData((filters, { includ
 });
 
 const { data: paginatedApplications, pagination } = usePagination(filteredApplications, { perPage: 20 });
+
+const cardsPerRow = ref<1 | 2 | 4>(4);
+const layoutManuallySelected = ref(false);
+const suggestedCardsPerRow = (count: number): 1 | 2 | 4 => {
+  if (count <= 1) return 1;
+  if (count < 4) return 2;
+  return 4;
+};
+const cardCols = computed(() => {
+  switch (cardsPerRow.value) {
+    case 1:
+      return 12;
+    case 2:
+      return 6;
+    case 4:
+    default:
+      return 3;
+  }
+});
+const cycleCardsPerRow = () => {
+  layoutManuallySelected.value = true;
+  switch (cardsPerRow.value) {
+    case 4:
+      cardsPerRow.value = 2;
+      break;
+    case 2:
+      cardsPerRow.value = 1;
+      break;
+    case 1:
+    default:
+      cardsPerRow.value = 4;
+      break;
+  }
+};
+const cardsPerRowIcon = computed(() => {
+  switch (cardsPerRow.value) {
+    case 4:
+      return 'mdi-view-grid-outline';
+    case 2:
+      return 'mdi-view-agenda-outline';
+    case 1:
+    default:
+      return 'mdi-view-stream-outline';
+  }
+});
+watch(
+  () => filteredApplications.value.length,
+  (count) => {
+    if (!layoutManuallySelected.value) {
+      cardsPerRow.value = suggestedCardsPerRow(count);
+    }
+  },
+  { immediate: true },
+);
 </script>
 
 <template>
@@ -158,8 +226,15 @@ const { data: paginatedApplications, pagination } = usePagination(filteredApplic
           </v-col>
 
           <v-col cols="auto">
-            <v-btn variant="text" @click="loadApplications" size="large">
+            <v-btn variant="text" @click="forceReloadApplications" size="large">
               <v-icon>mdi-cached</v-icon>
+            </v-btn>
+          </v-col>
+
+          <v-col cols="auto">
+            <v-btn variant="text" @click="cycleCardsPerRow" size="large">
+              <v-icon>{{ cardsPerRowIcon }}</v-icon>
+              <v-tooltip activator="parent" location="bottom">Cards per row: {{ cardsPerRow }}</v-tooltip>
             </v-btn>
           </v-col>
 
@@ -168,7 +243,7 @@ const { data: paginatedApplications, pagination } = usePagination(filteredApplic
 
         <template v-if="paginatedApplications.length > 0">
           <v-row>
-            <v-col cols="3" v-for="application in paginatedApplications" :key="`application-${application.guid}`">
+            <v-col cols="12" :md="cardCols" v-for="application in paginatedApplications" :key="`application-${application.guid}`">
               <application-item :application="application"></application-item>
             </v-col>
           </v-row>

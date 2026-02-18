@@ -29,6 +29,7 @@ const compact = computed(() => {
 
 const menus = computed<MenuItem[]>(() => [
   { label: t('menu.applications'), route: { name: RouteNames.APPLICATIONS }, icon: 'mdi-view-dashboard' },
+  { label: t('menu.services'), route: { name: RouteNames.SERVICES }, icon: 'mdi-database-outline' },
   { label: t('menu.organizations'), route: { name: RouteNames.ORGANIZATIONS }, icon: 'mdi-file-tree-outline' },
 ]);
 

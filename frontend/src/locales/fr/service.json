@@ -1,6 +1,11 @@
 {
   "service": "Service",
   "services": "Services",
+  "filter": {
+    "organization": "@:organization.organization",
+    "space": "@:space.space",
+    "text": "Filtrer"
+  },
   "instance": {
     "title": "Instance",
     "type": "Type"

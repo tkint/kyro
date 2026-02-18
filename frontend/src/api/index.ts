@@ -2,7 +2,7 @@ import { HttpMethod } from '@/models/common';
 import { arrayOfNotFalsy } from '@/utils/array';
 import { Result } from '@/utils/result';
 import { absoluteOrRelativeURL } from '@/utils/url';
-import { uniq } from 'lodash';
+import { uniqBy } from 'lodash';
 
 const serverUrl: string = import.meta.env.VITE_SERVER_URL || '';
 
@@ -103,7 +103,10 @@ export const queryParams = (params: Record<string, any>): Record<string, any> =>
 };
 
 export const compactErrors = (...errors: (ApiErrorResponse | undefined | false)[]): ApiErrorResponse | undefined => {
-  const flattenErrors = uniq(arrayOfNotFalsy(...errors).flatMap((error) => error.errors));
+  const flattenErrors = uniqBy(
+    arrayOfNotFalsy(...errors).flatMap((error) => error.errors),
+    (error) => `${error.code}|${error.title}|${error.detail}`,
+  );
   return flattenErrors.length > 0 ? { errors: flattenErrors } : undefined;
 };
 

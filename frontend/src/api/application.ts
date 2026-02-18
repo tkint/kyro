@@ -62,4 +62,11 @@ export default {
       authorization: useAuthStore().getAuthorization,
     });
   },
+  delete: async (guid: CFApplication['guid']) => {
+    return handleApiCall({
+      path: `/v3/apps/${guid}`,
+      method: 'DELETE',
+      authorization: useAuthStore().getAuthorization,
+    });
+  },
 };

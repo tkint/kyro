@@ -1,4 +1,5 @@
 {
   "applications": "@:application.applications",
+  "services": "@:service.services",
   "organizations": "Organisations"
 }

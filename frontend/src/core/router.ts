@@ -9,6 +9,7 @@ export enum RouteNames {
   APPLICATION_SERVICES = 'APPLICATION_SERVICES',
   APPLICATION_LOG_STREAM = 'APPLICATION_LOG_STREAM',
   APPLICATIONS = 'APPLICATIONS',
+  SERVICES = 'SERVICES',
   ORGANIZATION = 'ORGANIZATION',
   ORGANIZATIONS = 'ORGANIZATIONS',
   SPACE = 'SPACE',
@@ -63,6 +64,11 @@ const router = createRouter({
       name: RouteNames.APPLICATIONS,
       path: '/applications',
       component: () => import('@/views/ApplicationsView.vue'),
+    },
+    {
+      name: RouteNames.SERVICES,
+      path: '/services',
+      component: () => import('@/views/ServicesView.vue'),
     },
 
     {

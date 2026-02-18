@@ -1,5 +1,7 @@
 import { Dayjs } from 'dayjs';
 import { CFLink, CFMetaData, CFPaginated, CFResourceWithRelationShips, CFToOneRelationship } from '@/models/cf/common';
+import { CFOrganization } from '@/models/cf/organization';
+import { CFSpace } from '@/models/cf/space';
 
 export interface CFServiceInstance extends CFResourceWithRelationShips {
   name: string;
@@ -25,6 +27,10 @@ export interface CFServiceInstance extends CFResourceWithRelationShips {
     parameters: CFLink;
     shared_spaces: CFLink;
   };
+  included?: {
+    spaces: CFSpace[];
+    organizations: CFOrganization[];
+  };
 }
 
 export namespace CFServiceInstance {
@@ -42,7 +48,7 @@ export namespace CFServiceInstance {
   }
 }
 
-export type PaginatedServiceInstances = CFPaginated<CFServiceInstance>;
+export type PaginatedServiceInstances = CFPaginated<CFServiceInstance, { spaces: CFSpace[]; organizations: CFOrganization[] }>;
 
 export interface CFServiceBinding extends CFResourceWithRelationShips {
   name: string;

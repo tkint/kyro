@@ -9,7 +9,7 @@
     "dev": "run-p dev:*",
     "lint": "tsc",
     "prebuild": "rimraf -g dist/*",
-    "build": "esbuild src/main.ts --bundle --platform=node --outfile=dist/app.js"
+    "build": "node scripts/build.mjs"
   },
   "dependencies": {
     "axios": "^1.13.5",

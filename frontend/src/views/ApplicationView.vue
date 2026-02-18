@@ -2,6 +2,7 @@
 import { ApiErrorResponse, compactErrors } from '@/api';
 import applicationApi from '@/api/application';
 import ApiErrorAlert from '@/components/ApiErrorAlert.vue';
+import DeleteButton from '@/components/application/action/DeleteButton.vue';
 import RestageButton from '@/components/application/action/RestageButton.vue';
 import RestartButton from '@/components/application/action/RestartButton.vue';
 import StartButton from '@/components/application/action/StartButton.vue';
@@ -17,6 +18,7 @@ import { waitUntil } from '@/utils/common';
 import { matchesOneOf } from '@/utils/string';
 import { computed, onDeactivated, ref } from 'vue';
 import { useDisplay } from 'vuetify';
+import { useRouter } from 'vue-router';
 
 const props = defineProps<{
   guid: CFApplication['guid'];
@@ -24,7 +26,7 @@ const props = defineProps<{
 
 const loading = ref(false);
 
-type Action = 'start' | 'stop' | 'restart' | 'restage';
+type Action = 'start' | 'stop' | 'restart' | 'restage' | 'delete';
 
 const currentAction = ref<Action>();
 const handleLaunchAction = (action: Action) => {
@@ -57,11 +59,15 @@ const polling = computed({
 });
 
 const display = useDisplay();
+const router = useRouter();
 const showSectionDrawer = ref(false);
 const closeSectionDrawer = () => {
   if (display.mdAndDown.value) {
     showSectionDrawer.value = false;
   }
+};
+const handleDeleteSuccess = () => {
+  router.push({ name: RouteNames.APPLICATIONS, query: { refresh: `${Date.now()}` } });
 };
 
 const loadAllData = async (reset: boolean = false) => {
@@ -180,10 +186,14 @@ const restaging = computed(() => !!refRestageButton.value?.loading);
             @completed="currentAction = undefined">
           </restage-button>
 
-          <v-btn disabled>
-            <v-icon>mdi-delete-outline</v-icon>
-            <v-tooltip activator="parent" location="bottom">Delete</v-tooltip>
-          </v-btn>
+          <delete-button
+            :application="application"
+            :disabled="!!currentAction"
+            @launched="handleLaunchAction('delete')"
+            @completed="currentAction = undefined"
+            @success="handleDeleteSuccess"
+            @error="errors.push($event)">
+          </delete-button>
         </v-btn-group>
 
         <v-spacer></v-spacer>

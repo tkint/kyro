@@ -1,15 +1,19 @@
 <script setup lang="ts">
-import { ServiceWithBinding } from '@/components/services/models';
+import { CFServiceInstance } from '@/models/cf/service';
 import { formatDate } from '@/utils/date';
 import { computed } from 'vue';
 
+type RelatedResource = {
+  guid: string;
+  name: string;
+};
+
 const props = defineProps<{
-  service: ServiceWithBinding;
+  service: CFServiceInstance & { space?: RelatedResource; organization?: RelatedResource };
   deleting?: boolean;
 }>();
 
 const emits = defineEmits<{
-  (e: 'open'): void;
   (e: 'delete'): void;
 }>();
 
@@ -28,7 +32,7 @@ const progressColor = computed(() => {
 </script>
 
 <template>
-  <v-card density="compact" @click="emits('open')">
+  <v-card density="compact">
     <v-progress-linear
       :color="progressColor"
       model-value="100"
@@ -38,6 +42,16 @@ const progressColor = computed(() => {
     <v-card-title :title="service.name">{{ service.name }}</v-card-title>
 
     <v-card-text>
+      <v-row class="justify-space-between" dense>
+        <v-col>Organisation</v-col>
+        <v-col cols="auto">{{ service.organization?.name ?? '--' }}</v-col>
+      </v-row>
+
+      <v-row class="justify-space-between" dense>
+        <v-col>Space</v-col>
+        <v-col cols="auto">{{ service.space?.name ?? '--' }}</v-col>
+      </v-row>
+
       <v-row class="justify-space-between" dense>
         <v-col>Dernière opération</v-col>
         <v-col cols="auto">{{ service.last_operation.type }} / {{ service.last_operation.state }}</v-col>
@@ -63,7 +77,7 @@ const progressColor = computed(() => {
         :disabled="deleting"
         @click.stop="emits('delete')">
         <v-icon>mdi-delete-outline</v-icon>
-        <v-tooltip activator="parent" location="bottom">Delete service from app</v-tooltip>
+        <v-tooltip activator="parent" location="bottom">Delete service instance</v-tooltip>
       </v-btn>
     </v-card-actions>
   </v-card>
